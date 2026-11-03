@@ -1,0 +1,105 @@
+/* Removable Trinetra chart feature: left-side controls and computed client fields. */
+#form .engine-derived-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+#form .engine-derived-field > span {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+#form .engine-derived-field small {
+    color: var(--mut, #93939e);
+    font-size: 10px;
+    font-weight: 400;
+}
+#form .engine-derived-field output {
+    display: block;
+    min-height: 42px;
+    padding: 8px 11px;
+    border: 1px solid var(--line, #33333b);
+    border-radius: 10px;
+    background: var(--paper, #222227);
+    color: var(--ink, #fff);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+#form .engine-derived-field output.is-empty {
+    color: var(--mut, #93939e);
+    font-size: 13px;
+    font-weight: 400;
+}
+#form .chart-engine-actions {
+    display: grid;
+    grid-template-columns: minmax(132px, auto) minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 5px;
+}
+#form .chart-generate-button {
+    min-height: 38px;
+    padding: 7px 12px;
+    border: 1px solid var(--red, #b30b18);
+    border-radius: 10px;
+    background: var(--red, #b30b18);
+    color: #fff;
+    font-weight: 700;
+}
+#form .chart-generate-button:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+#form .chart-generate-button:disabled {
+    opacity: .7;
+    cursor: progress;
+}
+#form .chart-engine-status {
+    min-width: 0;
+    color: var(--mut, #93939e);
+    font-size: 11px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+#form .chart-engine-status.is-error {
+    color: #c9323d;
+}
+#form .chart-location-coordinates {
+    margin: 4px 0 11px;
+}
+#form .chart-coordinate-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
+#form .chart-coordinate-fields label {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    color: var(--mut, #93939e);
+    font-size: 11px;
+    font-weight: 600;
+}
+#form .chart-coordinate-fields input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 7px 9px;
+    font-size: 12px;
+}
+#form .chart-location-coordinates p {
+    margin: 5px 0 0;
+    color: var(--mut, #93939e);
+    font-size: 10px;
+    line-height: 1.4;
+}
+@media (max-width: 520px) {
+    #form .chart-engine-actions {
+        grid-template-columns: 1fr;
+    }
+    #form .chart-coordinate-fields {
+        gap: 6px;
+    }
+}

@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trinetra Report Generator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Source+Serif+4:wght@400;600&family=Noto+Serif+Devanagari:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --cream: #f8f4ec;
+            --paper: #fffdf8;
+            --ink: #17110f;
+            --red: #b3121f;
+            --rose: #f1d9d6;
+            --line: #d9cfc0;
+            --mut: #6b5f55
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: #e9e2d4;
+            color: var(--ink);
+            font: 16px/1.6 "Source Serif 4", "Noto Serif Devanagari", serif
+        }
+
+        .app {
+            display: grid;
+            grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+            min-height: 100vh
+        }
+
+        aside {
+            background: var(--cream);
+            border-right: 2px solid var(--ink);
+            padding: 16px;
+            overflow-y: auto;
+            height: 100vh;
+            position: sticky;
+            top: 0
+        }
+
+        aside h1 {
+            font: 800 22px "Playfair Display", serif;
+            margin: 0;
+            letter-spacing: .04em
+        }
+
+        details.fs {
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            margin: 10px 0;
+            background: var(--paper)
+        }
+
+        details.fs>summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--red);
+            padding: 9px 12px
+        }
+
+        details.fs>div {
+            padding: 2px 12px 12px
+        }
+
+        .blk {
+            border-top: 1px dashed var(--line);
+            padding-top: 6px;
+            margin-top: 8px
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 8px 0 3px
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            font: inherit;
+            font-size: 14.5px;
+            padding: 6px 8px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            background: #fff;
+            color: var(--ink)
+        }
+
+        textarea {
+            min-height: 70px;
+            resize: none;
+            overflow-y: hidden
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus,
+        button:focus-visible {
+            outline: 2px solid var(--red);
+            outline-offset: 1px
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px
+        }
+
+        .top {
+            display: flex;
+            gap: 6px;
+            margin: 10px 0;
+            flex-wrap: wrap
+        }
+
+        .top button {
+            flex: 1
+        }
+
+        button {
+            font: 600 14px inherit;
+            font-family: inherit;
+            padding: 8px 10px;
+            border: 1.5px solid var(--ink);
+            background: var(--paper);
+            border-radius: 4px;
+            cursor: pointer
+        }
+
+        button.on,
+        button.go {
+            background: var(--red);
+            border-color: var(--red);
+            color: #fff
+        }
+
+        button.go {
+            width: 100%;
+            font-size: 17px;
+            padding: 12px;
+            margin-top: 6px
+        }
+
+        button.sm {
+            padding: 3px 9px;
+            font-size: 12px
+        }
+
+        .thumb {
+            max-height: 80px;
+            margin-top: 6px;
+            border: 1px solid var(--line);
+            display: block
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--mut);
+            margin: 4px 0 0
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 4px 0
+        }
+
+        .chips label {
+            margin: 0;
+            font-weight: 400
+        }
+
+        .chips input {
+            display: none
+        }
+
+        .chips span,
+        .chips button {
+            display: block;
+            padding: 4px 9px;
+            border: 1.5px solid var(--line);
+            border-radius: 14px;
+            font-size: 12.5px;
+            cursor: pointer;
+            background: #fff;
+            font-weight: 400
+        }
+
+        .chips input:checked+span {
+            background: var(--red);
+            border-color: var(--red);
+            color: #fff
+        }
+
+        .rg {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin: 4px 0
+        }
+
+        .tools {
+            display: flex;
+            gap: 5px;
+            margin: 3px 0 0
+        }
+
+        .tools button {
+            padding: 2px 9px;
+            font-size: 13px;
+            border-radius: 12px;
+            border-width: 1px
+        }
+
+        .exp {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-top: 6px
+        }
+
+        .exp button {
+            background: var(--red);
+            border-color: var(--red);
+            color: #fff;
+            padding: 11px 4px
+        }
+
+        main {
+            padding: 24px;
+            display: flex;
+            justify-content: center
+        }
+
+        #report {
+            width: 210mm;
+            max-width: 100%;
+            background: var(--paper);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, .18);
+            font-size: 14.5px;
+            line-height:1.35
+        }
+        #report .sec { margin:18px 0; }
+        #report .about { line-height:1.3;margin-bottom:10px; }
+        #report .box,#report .txt,#report table.d { line-height:1.35; }
+        #report .ar { margin:0 0 16px; }
+        #report ol.pts li { line-height:1.3;margin:0; }
+        #report ol.pts li+li { margin-top:8px; }
+        #report .report-lines { display:flex;flex-direction:column;gap:8px;line-height:1.3; }
+        #report .report-point { display:block;line-height:1.3;white-space:pre-wrap; }
+
+
+        .pg {
+            padding: 15mm;
+            min-height: 200mm
+        }
+
+        .pg+.pg {
+            border-top: 3px dashed var(--line)
+        }
+
+        .rh {
+            text-align: center;
+            border-bottom: 2px solid var(--red);
+            padding-bottom: 12px;
+            margin-bottom: 14px
+        }
+
+        .rh svg {
+            width: 84px;
+            height: 84px
+        }
+
+        .brand {
+            font: 800 26px "Playfair Display", serif;
+            letter-spacing: .3em;
+            margin: 4px 0 0;
+            padding-left: .3em
+        }
+
+        .rt {
+            font: 800 28px "Playfair Display", "Noto Serif Devanagari", serif;
+            margin: 6px 0 2px
+        }
+
+        .tag {
+            letter-spacing: .2em;
+            font-size: 12px;
+            color: var(--mut)
+        }
+
+        .mh {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1.5px solid var(--red);
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+            font: 700 13px "Playfair Display", serif;
+            letter-spacing: .2em
+        }
+
+        .mh svg {
+            width: 30px;
+            height: 30px
+        }
+
+        #report h2 {
+            font: 700 20px "Playfair Display", "Noto Serif Devanagari", serif;
+            margin: 0 0 6px;
+            padding-left: 10px;
+            border-left: 5px solid var(--red)
+        }
+
+        #report h3 {
+            font-size: 15px;
+            margin: 10px 0 2px;
+            color: var(--red)
+        }
+
+        .sec {
+            margin: 14px 0
+        }
+
+        .box {
+            background: var(--cream);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 10px 12px
+        }
+
+        .about {
+            font-size: 13px;
+            color: var(--mut);
+            margin: 0 0 8px
+        }
+
+        table.d {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        table.d td {
+            border: 1px solid var(--line);
+            padding: 5px 9px
+        }
+
+        table.d td:nth-child(odd) {
+            background: var(--cream);
+            font-weight: 600;
+            width: 19%
+        }
+
+        .cimg {
+            display: block;
+            margin: 8px auto;
+            max-width: 100%;
+            max-height: 120mm;
+            border: 1px solid var(--line)
+        }
+
+        .ph {
+            border: 1.5px dashed var(--line);
+            padding: 30px;
+            text-align: center;
+            color: var(--mut);
+            font-size: 13px
+        }
+
+        .txt {
+            white-space: pre-wrap
+        }
+
+        .lvl {
+            display: inline-block;
+            font: 600 12px sans-serif;
+            background: var(--red);
+            color: #fff;
+            border-radius: 10px;
+            padding: 1px 10px;
+            margin-left: 8px;
+            vertical-align: middle
+        }
+
+        .ar {
+            margin: 8px 0;
+            break-inside: avoid
+        }
+
+        ol.pts {
+            margin: 6px 0;
+            padding-left: 22px
+        }
+
+        ol.pts li {
+            margin: 3px 0
+        }
+
+        .ft {
+            border-top: 2px solid var(--red);
+            margin-top: 18px;
+            padding-top: 10px;
+            text-align: center;
+            font-size: 13px
+        }
+
+        .ft b {
+            font-size: 17px
+        }
+
+        .dis {
+            font-size: 11.5px;
+            color: var(--mut);
+            margin-top: 6px
+        }
+
+        @media(max-width:900px) {
+            .app {
+                grid-template-columns: 1fr
+            }
+
+            aside {
+                height: auto;
+                position: static;
+                border-right: 0
+            }
+
+            main {
+                padding: 8px
+            }
+
+            .pg {
+                padding: 8mm 5mm
+            }
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 12mm 10mm 14mm;
+
+                @bottom-center {
+                    content: "TRINETRA  ·  " counter(page);
+                    font-size: 10px;
+                    color: #6b5f55
+                }
+            }
+
+            body {
+                background: #fff
+            }
+
+            aside {
+                display: none
+            }
+
+            .app {
+                display: block
+            }
+
+            main {
+                padding: 0
+            }
+
+            #report {
+                box-shadow: none;
+                width: auto
+            }
+
+            .pg {
+                padding: 0;
+                min-height: 0
+            }
+
+            .pg+.pg {
+                border: 0;
+                break-before: page
+            }
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact
+            }
+        }
+
+        /* Editor-only visual refresh. Report styles remain unchanged. */
+        aside { --cream:#121214; --paper:#1a1a1e; --ink:#fff; --red:#b30b18; --rose:#1a1a1e; --line:#33333b; --mut:#93939e; background:#121214; border-right:1px solid #33333b; padding:20px clamp(14px,2vw,28px); color:#fff; }
+        aside h1 { letter-spacing:.12em; color:#fff; }
+        aside details.fs { background:#1a1a1e; border:1px solid #33333b; border-radius:12px; margin:12px 0; overflow:visible; }
+        aside details.fs>summary { color:#fff; padding:13px 15px; }
+        aside details.fs>div { padding:3px 15px 15px; }
+        aside .blk { border-top:1px solid #33333b; padding-top:12px; margin-top:12px; }
+        aside input, aside select, aside textarea { width:100%; min-width:0; border:1px solid #33333b; border-radius:9px; padding:9px 11px; color:#fff; background:#222227; line-height:1.45; transition:border-color .16s,box-shadow .16s; }
+        aside textarea { min-height:84px; height:auto; resize:none; overflow-y:hidden; }
+        aside input:focus, aside select:focus, aside textarea:focus, aside button:focus-visible { outline:0; border-color:#b30b18; box-shadow:0 0 0 3px rgba(179,11,24,.25); }
+        aside button { border:1px solid #33333b; border-radius:9px; color:#fff; background:#222227; padding:9px 11px; transition:background .15s,border-color .15s,transform .15s; }
+        aside button:hover { border-color:#b30b18; background:#2b2023; }
+        aside button.on, aside button.go, aside .exp button { color:#fff; background:#b30b18; border-color:#b30b18; }
+        aside .top { gap:8px; margin:12px 0; }
+        aside .top button { min-height:42px; }
+        aside .row, aside .rg { gap:10px; }
+        aside .chips span, aside .chips button { color:#fff; border-color:#33333b; background:#222227; border-radius:999px; line-height:1.35; }
+        aside .chips button.selected { color:#fff;background:#b30b18;border-color:#b30b18; }
+        aside .chips input:checked+span { background:#b30b18; border-color:#b30b18; }
+        aside .hint { color:#93939e; }
+        aside .tools { margin:5px 0 0; }
+        aside .tools button { border-radius:8px; }
+        aside .thumb { border-radius:8px; border-color:#33333b; }
+        aside .exp { gap:8px; }
+        @media(max-width:900px) { .app { grid-template-columns:1fr; } aside { height:auto;position:static;border-right:0; } }
+        @media(max-width:560px) { aside .row, aside .rg { grid-template-columns:1fr; } aside .exp { grid-template-columns:1fr; } }
+
+        aside .field-with-option { display:flex;align-items:flex-end;gap:8px;margin:8px 0;min-width:0; }
+        aside .field-with-option>label:first-child { flex:1;min-width:0;margin:0; }
+        aside .hindi-translation-toggle { display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;white-space:nowrap;margin:0 0 5px;padding:7px 9px;border:1px solid #33333b;border-radius:9px;background:#222227;color:#fff;font-size:12px;line-height:1.3;cursor:pointer; }
+        aside .hindi-translation-toggle input[type=checkbox] { width:15px;height:15px;min-width:15px;margin:0;padding:0;accent-color:#b30b18; }
+        aside .place-field { position:relative; }
+        aside .place-suggestions { position:absolute; z-index:20; top:100%; left:0; right:0; margin-top:5px; max-height:240px; overflow:auto; padding:5px; border:1px solid #33333b; border-radius:10px; background:#1a1a1e; box-shadow:0 12px 30px rgba(0,0,0,.4); }
+        aside .place-option { width:100%; text-align:left; border:0; background:transparent; border-radius:7px; font-size:13px; }
+        aside .place-option:hover { background:#292329; }
+        aside .place-message { padding:9px 10px;color:#93939e;font-size:12px; }
+        aside .place-attribution { padding:6px 8px 4px;color:#93939e;font-size:10px;text-align:right; }
+        aside .place-attribution a { color:#c5c5cf;text-decoration:underline; }
+
+        aside .date-field, aside .time-field { position:relative; }
+        aside .date-field input[readonly], aside .time-field input[readonly] { cursor:pointer; caret-color:transparent; user-select:none; }
+        aside .date-picker, aside .time-picker { position:absolute;z-index:30;top:100%;left:0;right:0;margin-top:5px;padding:10px;border:1px solid #33333b;border-radius:10px;background:#1a1a1e;box-shadow:0 12px 30px #0008; }
+        aside .date-head,.date-searches,.time-parts { display:flex;align-items:center;gap:6px; }
+        aside .date-searches { flex:1;flex-wrap:wrap; } aside .date-searches input, aside .date-searches select { width:calc(50% - 3px);font-size:12px;padding:6px; }
+        aside .calendar { display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px;text-align:center; } aside .calendar span { color:#93939e;font-size:11px; } aside .calendar button { padding:5px 1px;font-size:12px; } aside .calendar button.selected { background:#b30b18; }
+        aside .time-parts { justify-content:center; } aside .time-part { position:relative;flex:1; } aside .time-value { width:100%;font-size:16px; } aside .time-menu { position:absolute;z-index:3;top:100%;left:0;width:150px;max-height:220px;overflow:auto;padding:6px;background:#1a1a1e;border:1px solid #33333b;border-radius:9px; } aside .time-options { display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px; } aside .time-options button { padding:4px;border:1px solid transparent; }
+        aside .date-picker { background:#1a1a1e;border-color:#33333b;border-radius:18px;padding:14px;min-width:330px; }
+        aside .date-head { display:grid;grid-template-columns:34px 1fr 1fr 34px;align-items:center;gap:6px;margin-bottom:12px; }
+        aside .date-head button { background:transparent;border:0;font-size:17px;padding:6px;color:#fff; }
+        aside .date-head .date-title { font-size:16px;font-weight:700; }
+        aside .calendar { gap:5px;margin-top:8px; } aside .calendar span { padding:5px 0;color:#858176;font-weight:700; }
+        aside .calendar button { background:transparent;border:0;padding:9px 1px;border-radius:7px;font-size:14px; }
+        aside .calendar button:hover,aside .calendar button.selected { background:#b30b18;color:#fff;border-color:#b30b18; }
+        aside .date-list { position:absolute;z-index:4;top:48px;width:50%;max-height:280px;display:flex;flex-direction:column;overflow:hidden;padding:10px;background:#222227;border:1px solid #33333b;border-radius:15px;box-shadow:0 8px 22px #0009; }
+        aside .date-list.month-list { left:24%; } aside .date-list.year-list { left:48%; }
+        aside .date-list[hidden],aside .time-menu[hidden] { display:none; } aside .date-list input { flex:none;position:sticky;top:0;z-index:2;background:#222227;border:1px solid #33333b;font-size:14px; } aside .date-options { display:grid;gap:3px;margin-top:8px;max-height:205px;overflow-y:auto;overscroll-behavior:contain; } aside .date-options button { text-align:left;background:transparent;border:1px solid transparent;color:#fff;padding:8px;border-radius:8px; }
+        aside .date-options button.selected { background:#b30b18;border-color:#b30b18;color:#fff; } aside .date-options button.active:not(.selected),aside .date-options button:hover:not(.selected) { background:rgba(179,11,24,.18);border-color:#b30b18;color:#fff; }
+        aside .time-picker { position:absolute;z-index:30;top:100%;left:0;width:248px;min-width:0;margin-top:5px;padding:10px;background:#1a1a1e;border:1px solid #33333b;border-radius:16px;box-shadow:0 10px 24px #0009; } aside .time-parts { display:flex;gap:8px;align-items:center; } aside .time-part { position:relative; }
+        aside .time-value { min-width:52px;padding:7px 9px;background:#222227;border-color:#33333b;border-radius:12px;font-size:17px; }
+        aside .time-part.ampm { display:flex; } aside .time-part.ampm button { min-width:50px;padding:7px 9px;background:#222227;border:1px solid #33333b;color:#fff;font-size:17px; } aside .time-part.ampm button:first-child { border-radius:12px 0 0 12px; } aside .time-part.ampm button:last-child { border-radius:0 12px 12px 0; } aside .time-part.ampm button.selected { background:#b30b18;color:#fff;border-color:#b30b18; }
+        aside .time-menu { top:calc(100% + 6px);width:128px;height:auto;max-height:210px;display:flex;flex-direction:column;overflow:hidden;background:#1a1a1e;border-color:#33333b;border-radius:15px;padding:9px; }
+        aside .time-menu .time-search { flex:none;position:sticky;top:0;z-index:2;background:#222227; } aside .time-options { display:grid;grid-template-columns:1fr;grid-auto-rows:max-content;align-content:start;gap:2px;flex:1;overflow-y:auto;overscroll-behavior:contain; } aside .time-options button { background:transparent;border:0;color:#fff;text-align:left;padding:8px 10px; }
+        aside .time-options button.selected { background:#b30b18;border-color:#b30b18;color:#fff; } aside .time-options button.active:not(.selected),aside .time-options button:hover:not(.selected) { background:rgba(179,11,24,.18);border-color:#b30b18;color:#fff; }
+
+        aside .toolbar { display:flex;align-items:center;gap:7px;flex-wrap:nowrap;margin:12px 0 16px; }
+        aside .toolbar button { flex:0 0 auto;margin:0;display:inline-flex;align-items:center;justify-content:center; }
+        aside .tool-icon { width:44px;height:42px;padding:0;border-radius:13px;font-size:19px; }
+        aside .lang-pill { min-width:72px;height:40px;padding:0 13px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.03em; }
+        aside .lang-pill.on { background:#b30b18;border-color:#b30b18;color:#fff; }
+        @media(max-width:420px) { aside .toolbar { gap:5px; } aside .tool-icon { width:38px;height:38px; } aside .lang-pill { min-width:58px;padding:0 9px; } }
+
+        /* Cross-browser responsive sizing for the editor and preview columns. */
+        html, body { width:100%; min-width:0; }
+        .app { width:100%; grid-template-columns:minmax(0,45fr) minmax(0,55fr); }
+        .app > aside, .app > main { min-width:0; }
+        aside { height:100vh; height:100dvh; min-width:0; overflow-x:hidden; scrollbar-gutter:stable; }
+        aside details, aside details>div, aside .blk, aside label { min-width:0; }
+        aside .row, aside .rg { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        aside input, aside select, aside textarea, aside button { max-width:100%; }
+        aside .chips { min-width:0; }
+        aside .search-select { position:relative;min-width:0;width:100%; }
+        aside .search-select input[type=hidden] { display:none; }
+        aside .search-select-trigger { display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:40px;text-align:left;color:#93939e; }
+        aside .search-select-trigger.has-value { color:#fff; }
+        aside .search-select-menu { position:absolute;z-index:35;top:calc(100% + 5px);left:0;right:0;height:auto;max-height:250px;display:flex;flex-direction:column;overflow:hidden;padding:8px;border:1px solid #33333b;border-radius:12px;background:#1a1a1e;box-shadow:0 12px 28px #0009; }
+        aside .search-select-menu[hidden] { display:none; }
+        aside .search-select-query { flex:none;position:sticky;top:0;z-index:1;background:#222227; }
+        aside .search-select-options { display:flex;flex:1;min-height:0;flex-direction:column;gap:2px;overflow-y:auto;overscroll-behavior:contain;margin-top:6px; }
+        aside .search-select-options button { flex:none;width:100%;padding:7px 9px;border:1px solid transparent;background:transparent;text-align:left; }
+        aside .search-select-options button.selected { background:#b30b18;border-color:#b30b18;color:#fff; }
+        aside .search-select-options button.active:not(.selected), aside .search-select-options button:hover:not(.selected):not(.active) { background:rgba(179,11,24,.18);border-color:#b30b18;color:#fff; }
+        main { min-width:0; width:100%; padding:clamp(10px,2vw,24px); }
+        #report { min-width:0; width:210mm; max-width:100%; }
+        aside .date-picker { position:fixed;z-index:1000;width:min(360px,calc(100vw - 24px));min-width:0;right:auto; }
+        aside .time-picker { width:min(248px,calc(100vw - 24px)); }
+        @media(max-width:960px) {
+            .app { grid-template-columns:minmax(0,1fr); }
+            aside { height:auto; min-height:0; position:relative; top:auto; border-right:0; }
+            main { padding:clamp(8px,2vw,18px); }
+        }
+        @media(max-width:560px) {
+            aside .row, aside .rg { grid-template-columns:minmax(0,1fr); }
+            aside .exp { grid-template-columns:repeat(3,minmax(0,1fr)); }
+            aside .date-head { grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 28px; }
+            aside .date-head .date-title { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        }
+        /* Subtle motion is scoped to the editor so the live PDF preview remains visually unchanged. */
+        aside,
+        aside .search-select-options,
+        aside .time-options,
+        aside .date-options,
+        aside .place-suggestions { scroll-behavior:smooth; }
+        aside button,
+        aside input:not([type="hidden"]),
+        aside select,
+        aside textarea,
+        aside .fs,
+        aside .fs>summary,
+        aside .chips span {
+            transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .2s ease,transform .16s ease;
+        }
+        aside button:active { transform:translateY(1px) scale(.985); }
+        aside details.fs { transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease; }
+        aside details.fs[open] { box-shadow:0 7px 18px rgba(0,0,0,.14); }
+        aside details.fs>summary { transition:color .18s ease,background-color .18s ease; }
+        aside details.fs[open]>div { animation:editor-section-in .18s ease both; }
+        @keyframes editor-section-in { from { opacity:0;transform:translateY(-4px); } to { opacity:1;transform:translateY(0); } }
+        aside .place-suggestions,
+        aside .date-picker,
+        aside .time-picker,
+        aside .search-select-menu,
+        aside .date-list,
+        aside .time-menu {
+            opacity:1;transform:translateY(0) scale(1);transform-origin:top center;
+            transition:opacity .16s ease,transform .18s cubic-bezier(.2,.7,.2,1),display .18s allow-discrete;
+        }
+        aside .place-suggestions[hidden],
+        aside .date-picker[hidden],
+        aside .time-picker[hidden],
+        aside .search-select-menu[hidden],
+        aside .date-list[hidden],
+        aside .time-menu[hidden] { opacity:0;transform:translateY(-5px) scale(.99); }
+        @starting-style {
+            aside .place-suggestions:not([hidden]),
+            aside .date-picker:not([hidden]),
+            aside .time-picker:not([hidden]),
+            aside .search-select-menu:not([hidden]),
+            aside .date-list:not([hidden]),
+            aside .time-menu:not([hidden]) { opacity:0;transform:translateY(-5px) scale(.99); }
+        }
+        @media(prefers-reduced-motion:reduce) {
+            aside,aside * { scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important; }
+        }
+        @media print {
+            aside,aside * { animation:none!important;transition:none!important;scroll-behavior:auto!important; }
+        }
+        /* TEMPORARY PREMIUM UI EXPERIMENT — delete this block to revert. */
+        aside {
+            font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+            background:radial-gradient(ellipse at 18% 0%,rgba(179,11,24,.075),transparent 34%),linear-gradient(180deg,#141418 0%,#111114 100%);
+            border-right:1px solid rgba(255,255,255,.08);
+            padding:0 clamp(16px,2vw,26px) 18px;
+            scrollbar-color:#3a3034 transparent;
+            scrollbar-width:thin;
+        }
+        aside .temp-header {
+            --header-reveal-edge:18px;
+            position:sticky;top:0;z-index:48;
+            margin:0 calc(-1 * clamp(16px,2vw,26px)) 18px;
+            padding:18px clamp(16px,2vw,26px) 10px;
+            border:0;border-bottom:1px solid rgba(255,255,255,.07);border-radius:0;
+            background:rgba(18,18,20,.96);box-shadow:none;
+            backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+            transition:transform .48s cubic-bezier(.22,1,.36,1),opacity .32s ease;
+            will-change:transform,opacity;
+        }
+        aside h1 { font:800 23px/1.15 "Playfair Display",serif;letter-spacing:.15em;margin:0 0 8px;color:#fff; }
+        aside .toolbar {
+            display:flex;align-items:center;gap:8px;flex-wrap:nowrap;
+            margin:0;padding:0;background:transparent;border:0;
+        }
+        aside.temp-header-hidden:not(.temp-header-revealed) .temp-header {
+            opacity:0;transform:translateY(calc(-100% + var(--header-reveal-edge)));box-shadow:none;
+        }
+        aside .tool-icon { width:42px;height:40px;border-radius:13px;background:#202027;font-size:17px; }
+        aside .lang-pill { min-width:76px;height:38px;border-radius:999px;font-size:12px;letter-spacing:.02em; }
+        aside details.fs {
+            position:relative;margin:13px 0;border:1px solid rgba(255,255,255,.075);border-radius:15px;
+            background:linear-gradient(145deg,rgba(29,29,35,.98),rgba(24,24,29,.98));
+            box-shadow:0 7px 22px rgba(0,0,0,.16);overflow:visible;
+        }
+        aside details.fs[open] { border-color:rgba(179,11,24,.30);box-shadow:0 9px 25px rgba(0,0,0,.22),0 0 0 1px rgba(179,11,24,.05); }
+        aside details.fs>summary {
+            display:flex;align-items:center;justify-content:space-between;gap:12px;
+            padding:14px 16px;color:#f5f5f7;font-size:14px;font-weight:650;letter-spacing:.01em;list-style:none;
+        }
+        aside details.fs>summary::-webkit-details-marker { display:none; }
+        aside details.fs>summary::after { content:"＋";flex:none;color:#93939e;font-size:16px;font-weight:400;transition:transform .18s ease,color .18s ease; }
+        aside details.fs[open]>summary::after { content:"−";color:#d84a55; }
+        aside details.fs>div { padding:6px 16px 17px;border-top:1px solid rgba(255,255,255,.045); }
+        aside label { color:#d7d7dd;font-size:12px;font-weight:600;letter-spacing:.01em;margin:10px 0 5px; }
+        aside input:not([type="hidden"]),aside select,aside textarea {
+            border:1px solid #34343d;border-radius:11px;background:#202027;color:#f5f5f7;
+            padding:10px 12px;font:500 13px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        }
+        aside input::placeholder,aside textarea::placeholder { color:#7e7e89;opacity:1; }
+        aside input:focus,aside select:focus,aside textarea:focus,aside button:focus-visible {
+            outline:0;border-color:#b30b18;box-shadow:0 0 0 3px rgba(179,11,24,.22),0 5px 16px rgba(0,0,0,.15);
+        }
+        aside button {
+            border:1px solid #373740;border-radius:10px;background:#222228;color:#f4f4f6;
+            font:600 12.5px/1.35 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        }
+        aside button:hover { border-color:rgba(179,11,24,.75);background:#2a2226;transform:translateY(-1px); }
+        aside button:active { transform:translateY(0) scale(.985); }
+        aside .chips { gap:7px;margin:7px 0 9px; }
+        aside .chips span,aside .chips button { padding:6px 10px;border:1px solid #373740;border-radius:999px;background:#222228;color:#e5e5e9;font-size:11.5px; }
+        aside .chips button.selected,aside .chips input:checked+span { border-color:#b30b18;background:#b30b18;color:#fff;box-shadow:0 3px 12px rgba(179,11,24,.18); }
+        aside .zero-remedy-chips { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));align-items:stretch; }
+        aside .zero-remedy-chips button { width:100%;min-width:0;height:auto;white-space:normal;overflow-wrap:anywhere;text-align:left;line-height:1.45;border-radius:12px; }
+        aside .zero-remedy-option { min-width:0; }
+        aside .naam-japa-builder { display:grid;gap:7px;margin:9px 0 12px; }
+        aside .naam-japa-row { display:flex;flex-wrap:wrap;align-items:center;gap:6px;color:#d7d7dd;font-size:12px; }
+        aside .naam-japa-field-wrap { position:relative;flex:1 1 105px;min-width:84px; }
+        aside .naam-japa-field-wrap input { width:100%;min-width:0;padding:7px 9px;border-radius:9px;background:#222227;border-color:#33333b;font-size:12px; }
+        aside .naam-japa-menu { position:absolute;z-index:40;top:calc(100% + 5px);left:0;width:max(100%,210px);max-width:calc(100vw - 50px);height:auto;max-height:220px;display:flex;flex-direction:column;overflow:hidden;padding:8px;border:1px solid #3a3a44;border-radius:13px;background:#1b1b21;box-shadow:0 16px 38px rgba(0,0,0,.42); }
+        aside .naam-japa-menu[hidden] { display:none; }
+        aside .naam-japa-options { display:flex;flex:1;min-height:0;flex-direction:column;gap:2px;overflow-y:auto;overscroll-behavior:contain;margin-top:2px; }
+        aside .naam-japa-options button { flex:none;width:100%;padding:7px 9px;border:1px solid transparent;border-radius:8px;background:transparent;text-align:left;color:#fff;font-size:12px; }
+        aside .naam-japa-options button.active { background:rgba(179,11,24,.16);border-color:rgba(179,11,24,.8); }
+        aside .naam-japa-options button.selected { background:#b30b18;border-color:#b30b18; }
+        aside .naam-japa-action { flex:0 0 auto;min-width:60px;height:32px;padding:0 9px;border-radius:10px;background:#222227;color:#fff;font-size:11px; }
+        aside .naam-japa-action.add { background:#b30b18;border-color:#b30b18; }
+        aside .naam-japa-status { color:#93939e;font-size:10px;line-height:1.4; }
+        aside .naam-japa-footer { display:flex;align-items:center;justify-content:space-between;gap:8px;margin:3px 0 8px; }
+        aside .naam-japa-clear { flex:0 0 auto;padding:4px 8px;border-radius:8px;background:transparent;color:#93939e;font-size:10px; }
+        aside .naam-japa-clear:hover:not(:disabled) { color:#fff; }
+        aside .naam-japa-clear:disabled { opacity:.45;cursor:not-allowed;transform:none; }
+        aside .naam-japa-translation { display:inline-flex;align-items:center;gap:4px;width:auto;margin:0;padding:4px 7px;border:1px solid #33333b;border-radius:9px;background:#222227;color:#d7d7dd;font-size:10px;white-space:nowrap; }
+        aside .naam-japa-translation input { width:auto;min-width:0;margin:0;padding:0;accent-color:#b30b18; }
+        @keyframes naam-japa-in { from { opacity:0;transform:translateY(-3px); } to { opacity:1;transform:translateY(0); } }
+        aside .blk { margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.075); }
+        aside .blk>b { display:block;margin:0 0 8px;color:#eeeef1;font-size:13px;font-weight:650; }
+        aside .rg,aside .row { gap:10px; }
+        aside .search-select-trigger { min-height:42px;padding:10px 12px;border-radius:11px;background:#202027;color:#f1f1f4; }
+        aside .search-select-menu,aside .time-menu,aside .date-list,aside .place-suggestions {
+            border-color:#3a3a44;border-radius:13px;background:#1b1b21;box-shadow:0 16px 38px rgba(0,0,0,.42);
+        }
+        aside .search-select-query,aside .time-menu .time-search,aside .date-list input { background:#222229;border-color:#393943;border-radius:9px; }
+        .picker-keyboard-form { display:contents; margin:0; }
+        .picker-keyboard-submit { position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important; }
+        aside .search-select-options button,aside .time-options button,aside .date-options button { border-radius:8px; }
+        aside .search-select-options button.selected,aside .time-options button.selected,aside .date-options button.selected { background:#b30b18;border-color:#b30b18; }
+        aside .search-select-options button.active:not(.selected),aside .time-options button.active:not(.selected),aside .date-options button.active:not(.selected) { background:rgba(179,11,24,.16);border-color:rgba(179,11,24,.8); }
+        aside .hint { padding:8px 10px;border-left:2px solid rgba(179,11,24,.55);border-radius:0 8px 8px 0;background:rgba(255,255,255,.025);line-height:1.55; }
+        aside .exp button { min-height:40px;border-radius:10px; }
+        aside .place-suggestions { padding:6px; }
+        aside .place-option { border:0;background:transparent;text-align:left; }
+        aside .place-option:hover,aside .place-option.active { background:rgba(179,11,24,.16); }
+        aside .place-option.active { outline:1px solid rgba(179,11,24,.72); }
+        aside .date-picker.compact { padding:8px;border-radius:14px; }
+        aside .date-picker.compact .date-head { gap:3px;margin-bottom:5px; }
+        aside .date-picker.compact .date-head button { padding:3px;font-size:15px; }
+        aside .date-picker.compact .calendar { gap:2px;margin-top:3px; }
+        aside .date-picker.compact .calendar span { padding:2px 0;font-size:10px; }
+        aside .date-picker.compact .calendar button { padding:3px 1px;font-size:12px; }
+        aside .date-picker.micro { padding:4px;border-radius:12px; }
+        aside .date-picker.micro .date-head { gap:1px;margin-bottom:2px; }
+        aside .date-picker.micro .date-head button { padding:0;font-size:13px; }
+        aside .date-picker.micro .calendar { gap:0;margin-top:1px; }
+        aside .date-picker.micro .calendar span { padding:0;font-size:9px; }
+        aside .date-picker.micro .calendar button { padding:0;font-size:10px;line-height:1.1; }
+        @media(max-width:560px) {
+            aside { padding:0 13px 14px; }
+            aside .temp-header { --header-reveal-edge:14px;margin:0 -13px 18px;padding:14px 13px 10px; }
+            aside .toolbar { gap:6px;margin-left:-3px;margin-right:-3px; }
+            aside details.fs>summary { padding:13px 14px; }
+            aside details.fs>div { padding:6px 13px 15px; }
+        }
+        /* Viewport-layer date picker: escape the editor's scroll container. */
+        .date-picker-portal {
+            position:fixed;z-index:1000;box-sizing:border-box;min-width:0;right:auto;margin:0;
+            padding:14px;border:1px solid #33333b;border-radius:18px;background:#1a1a1e;color:#fff;
+            box-shadow:0 12px 30px rgba(0,0,0,.5);font:500 14px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;
+            opacity:1;transform:translateY(0) scale(1);transform-origin:center center;
+            transition:opacity .16s ease,transform .18s cubic-bezier(.2,.7,.2,1),display .18s allow-discrete;
+        }
+        .date-picker-portal[hidden] { display:none;opacity:0;transform:translateY(-5px) scale(.99); }
+        aside .date-picker-mobile-inline {
+            position:relative!important;inset:auto!important;display:block;box-sizing:border-box;
+            width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;max-height:none!important;
+            margin:10px 0 2px;overflow:visible!important;z-index:1!important;
+            opacity:1;transform:translateY(0);transform-origin:top center;
+            transition:opacity .18s ease,transform .2s cubic-bezier(.2,.7,.2,1),display .2s allow-discrete;
+        }
+        aside .date-picker-mobile-inline[hidden] { display:none;opacity:0;transform:translateY(-5px); }
+        .date-picker-portal .date-head { display:grid;grid-template-columns:34px 1fr 1fr 34px;align-items:center;gap:6px;margin-bottom:12px; }
+        .date-picker-portal .date-head button { background:transparent;border:0;color:#fff;font:600 17px/1.3 Inter,ui-sans-serif,system-ui,sans-serif;padding:6px; }
+        .date-picker-portal .date-head .date-title { font-size:16px;font-weight:700; }
+        .date-picker-portal .calendar { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:8px;text-align:center; }
+        .date-picker-portal .calendar span { padding:5px 0;color:#93939e;font-size:11px;font-weight:700; }
+        .date-picker-portal .calendar button { min-width:0;padding:9px 1px;border:1px solid transparent;border-radius:7px;background:transparent;color:#fff;font:500 14px/1.35 Inter,ui-sans-serif,system-ui,sans-serif; }
+        .date-picker-portal .calendar button:hover,.date-picker-portal .calendar button.selected { background:#b30b18;border-color:#b30b18;color:#fff; }
+        .date-picker-portal .date-list { position:absolute;z-index:4;top:48px;width:50%;max-height:280px;display:flex;flex-direction:column;overflow:hidden;padding:10px;border:1px solid #33333b;border-radius:15px;background:#222227;box-shadow:0 8px 22px #0009; }
+        .date-picker-portal .date-list.month-list { left:24%; }
+        .date-picker-portal .date-list.year-list { left:48%; }
+        .date-picker-portal .date-list[hidden] { display:none; }
+        .date-picker-portal .date-list input { flex:none;position:sticky;top:0;z-index:2;width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #393943;border-radius:9px;background:#222229;color:#fff;font:500 14px/1.4 Inter,ui-sans-serif,system-ui,sans-serif; }
+        .date-picker-portal .date-options { display:grid;gap:3px;margin-top:8px;max-height:205px;overflow-y:auto;overscroll-behavior:contain; }
+        .date-picker-portal .date-options button { width:100%;padding:8px;border:1px solid transparent;border-radius:8px;background:transparent;color:#fff;text-align:left;font:500 14px/1.4 Inter,ui-sans-serif,system-ui,sans-serif; }
+        .date-picker-portal .date-options button.selected { background:#b30b18;border-color:#b30b18;color:#fff; }
+        .date-picker-portal .date-options button.active:not(.selected),.date-picker-portal .date-options button:hover:not(.selected) { background:rgba(179,11,24,.18);border-color:#b30b18;color:#fff; }
+        .date-picker-portal .date-options.year-virtual-options,aside .date-picker-mobile-inline .date-options.year-virtual-options { display:block;position:relative;height:205px;max-height:205px;padding:0;overflow:auto;overscroll-behavior:contain; }
+        .year-virtual-track { position:relative;width:100%; }
+        .date-picker-portal .year-virtual-option,aside .date-picker-mobile-inline .year-virtual-option { position:absolute!important;left:0!important;right:0!important;width:100%;height:34px;box-sizing:border-box;overflow:hidden; }
+        .date-picker-portal .date-search { outline:0; }
+        .date-picker-portal.compact { padding:8px;border-radius:14px; }
+        .date-picker-portal.compact .date-head { gap:3px;margin-bottom:5px; }
+        .date-picker-portal.compact .date-head button { padding:3px;font-size:15px; }
+        .date-picker-portal.compact .calendar { gap:2px;margin-top:3px; }
+        .date-picker-portal.compact .calendar span { padding:2px 0;font-size:10px; }
+        .date-picker-portal.compact .calendar button { padding:3px 1px;font-size:12px; }
+        .date-picker-portal.micro { padding:4px;border-radius:12px; }
+        .date-picker-portal.micro .date-head { gap:1px;margin-bottom:2px; }
+        .date-picker-portal.micro .date-head button { padding:0;font-size:13px; }
+        .date-picker-portal.micro .calendar { gap:0;margin-top:1px; }
+        .date-picker-portal.micro .calendar span { padding:0;font-size:9px; }
+        .date-picker-portal.micro .calendar button { padding:0;font-size:10px;line-height:1.1; }
+        @starting-style { .date-picker-portal:not([hidden]) { opacity:0;transform:translateY(-5px) scale(.99); } }
+        @media(prefers-reduced-motion:reduce) { .date-picker-portal { transition-duration:.01ms!important; } }
+        /* END TEMPORARY PREMIUM UI EXPERIMENT */
+        /* Responsive screen layout. The print/PDF rules above remain unchanged. */
+        .mobile-view-controls { display:none; }
+        @media screen {
+            html, body { width:100%; min-width:0; max-width:100%; overflow-x:clip; }
+            .app { width:100%; min-width:0; grid-template-columns:minmax(0,45fr) minmax(0,55fr); }
+            .app > aside, .app > main { min-width:0; max-width:100%; }
+            aside { container-name:editor; container-type:inline-size; }
+            aside input, aside select, aside textarea, aside button { min-width:0; max-width:100%; }
+            aside label, aside summary, aside p, aside button, aside .hint { overflow-wrap:anywhere; }
+            aside .toolbar { max-width:100%; flex-wrap:wrap; }
+            main { min-width:0; width:100%; overflow-x:clip; }
+            #report { min-width:0; width:210mm; max-width:100%; overflow-wrap:anywhere; }
+            #report .pg { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+            #report table.d { width:100%; table-layout:fixed; }
+            #report table.d td, #report table.d th { overflow-wrap:anywhere; }
+            #report img { max-width:100%; height:auto; }
+        }
+        @container editor (max-width:480px) {
+            aside .row, aside .rg { grid-template-columns:minmax(0,1fr) !important; }
+            aside #form .chart-engine-actions { grid-template-columns:minmax(0,1fr); }
+            aside #form .chart-coordinate-fields { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            aside .exp { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            aside .exp button:last-child { grid-column:1 / -1; }
+            aside .toolbar { flex-wrap:wrap; }
+        }
+        @container editor (max-width:360px) {
+            aside .field-with-option { flex-wrap:wrap; align-items:flex-start; }
+            aside .field-with-option>label:first-child { flex:1 1 100%; }
+            aside .hindi-translation-toggle { flex:0 1 auto; max-width:100%; margin:0 0 0 auto; white-space:normal; }
+            aside .hindi-translation-toggle span { min-width:0; overflow-wrap:anywhere; }
+            aside .naam-japa-status, aside .place-message, aside .place-attribution, aside .chart-engine-status { min-width:0; overflow-wrap:anywhere; }
+        }
+        @media screen and (orientation:landscape) {
+            .app { grid-template-columns:minmax(0,45fr) minmax(0,55fr); }
+            .mobile-view-controls { display:none !important; }
+            aside { height:100vh; height:100dvh; min-height:0; position:sticky; top:0; overflow-x:hidden; overflow-y:auto; }
+            main { display:flex; min-width:0; align-items:flex-start; padding:clamp(8px,1.5vw,24px); }
+        }
+        @media screen and (max-aspect-ratio:1/1) and (max-width:1100px) {
+            .app { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto; align-content:start; }
+            .mobile-view-controls {
+                display:block; position:sticky; top:0; z-index:1500; grid-column:1; grid-row:1;
+                width:100%; padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));
+                border-bottom:1px solid #33333b; background:#121214;
+            }
+            .mobile-view-controls button {
+                display:flex; width:100%; min-width:0; min-height:46px; align-items:center; justify-content:center;
+                gap:8px; padding:10px 14px; border:1px solid #b30b18; border-radius:12px;
+                background:#b30b18; color:#fff; font:inherit; font-size:15px; font-weight:700; line-height:1.3; cursor:pointer;
+                overflow-wrap:anywhere; box-shadow:0 5px 18px rgba(179,11,24,.2);
+            }
+            .mobile-view-controls button:focus-visible { outline:2px solid rgba(179,11,24,.55); outline-offset:2px; }
+            aside .temp-header { top:calc(55px + max(8px,env(safe-area-inset-top))); }
+            aside {
+                display:block; grid-column:1; grid-row:2; width:100%; height:auto; min-height:calc(100vh - 64px); min-height:calc(100dvh - 64px);
+                position:relative; top:auto; overflow:visible; border-right:0; padding:12px max(12px,env(safe-area-inset-right)) 20px max(12px,env(safe-area-inset-left));
+            }
+            main {
+                display:none; grid-column:1; grid-row:2; width:100%; min-height:calc(100vh - 64px); min-height:calc(100dvh - 64px);
+                padding:10px max(10px,env(safe-area-inset-right)) 18px max(10px,env(safe-area-inset-left));
+            }
+            body.mobile-preview-open .app > aside { display:none; }
+            body.mobile-preview-open .app > main { display:flex; align-items:flex-start; }
+            #report { width:100%; max-width:100%; }
+            #report .pg { min-height:0; padding:clamp(16px,4vw,30px) clamp(12px,4vw,24px); }
+            aside .toolbar { flex-wrap:wrap; }
+            .date-picker-portal { max-width:calc(100vw - 20px); }
+        }
+        @media screen and (max-aspect-ratio:1/1) and (max-width:360px) {
+            .mobile-view-controls { padding-left:max(9px,env(safe-area-inset-left)); padding-right:max(9px,env(safe-area-inset-right)); }
+            aside { padding-left:max(9px,env(safe-area-inset-left)); padding-right:max(9px,env(safe-area-inset-right)); }
+            aside .exp { grid-template-columns:minmax(0,1fr); }
+            aside .exp button:last-child { grid-column:auto; }
+            #report .brand { letter-spacing:.12em; }
+            #report .rt { font-size:clamp(20px,7vw,28px); }
+        }
+        @media print {
+            .mobile-view-controls { display:none !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="./engine/chart-feature.css">
+</head>
+
+<body>
+    <div class="app">
+        <div class="mobile-view-controls">
+            <button id="mobileViewToggle" type="button" aria-controls="form report" aria-expanded="false" aria-label="Show live preview">Preview</button>
+        </div>
+        <aside>
+            <div class="temp-header">
+                <h1>TRINETRA</h1>
+                <div class="toolbar" role="toolbar" aria-label="Report and file actions">
+                <button class="tool-icon" data-act="save" title="Save file" aria-label="Save file">💾</button>
+                <button class="tool-icon" data-act="open" title="Open file" aria-label="Open file">📂</button>
+                <button class="tool-icon" data-act="new" title="New report" aria-label="New report">＋</button>
+                <button id="bhi" class="lang-pill on" title="Preview the report in Hindi" aria-label="Hindi preview">Hindi</button>
+                <button id="ben" class="lang-pill" title="Preview the report in English" aria-label="English preview">English</button>
+                </div>
+            </div>
+            <input type="file" id="openf" accept=".json" hidden>
+            <div id="form"></div>
+            <details class="fs">
+                <summary>✨ Voice &amp; Formal Settings</summary>
+                <div>
+                    <label>Anthropic API key (saved only in this browser)<input type="password" id="apikey"
+                            placeholder="sk-ant-..."></label>
+                    <label style="display:flex;gap:6px;align-items:center;font-weight:400"><input type="checkbox"
+                            id="autof" style="width:auto"> Apply formal wording after voice input</label>
+                    <button data-act="formalall" style="width:100%;margin-top:6px">✨ Apply formal wording to all fields</button>
+                    <p class="hint">🎤 Voice input uses English. ✨ rewrites the selected field in clear, formal English while preserving its meaning.</p>
+                </div>
+            </details>
+            <div class="exp"><button data-act="print" data-m="hi">Hindi PDF</button><button data-act="print"
+                    data-m="en">English PDF</button><button data-act="print" data-m="both">Both PDFs</button></div>
+            <p class="hint">In the print window, choose “Save as PDF” and enable “Background graphics”. “Both PDFs” places the Hindi report first, followed by the English report. Text entries are saved separately by language.</p>
+        </aside>
+        <main>
+            <div id="report"></div>
+        </main>
+    </div>
+    <script>
+        const $ = s => document.querySelector(s);
+        const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const localISODate = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+        const S = { lang: 'hi', t: {}, g: { date: localISODate(new Date()) }, o: {}, r: {}, charts: [], uid: 10 };
+        S.charts = [1, 2, 3].map((i, x) => ({ id: i, type: ['D1', 'D9', 'D10'][x], mode: 'auto' })).concat([4, 5, 6].map(i => ({ id: i, type: 'V' + (i - 3), mode: 'auto' })));
+        const w = (a, b) => S.lang === 'hi' ? a : b;
+        const oth = l => l === 'hi' ? 'en' : 'hi';
+        const isAllCapsLatin = value => { const letters=String(value||'').match(/[A-Za-z]/g)||[]; return letters.length>0 && letters.every(c=>c===c.toUpperCase()); };
+        const T = (k, l = S.lang) => { const value=S.t[k+'_'+l]||''; return l==='en'&&S.uppercaseFields?.[k]?String(value).toLocaleUpperCase('en'):value; };
+        const TF = k => T(k) || T(k, oth(S.lang));
+        const editorText = k => {
+            const source=S.fieldSource?.[k];
+            if(source&&S.t[k+'_'+source]!=null)return S.t[k+'_'+source];
+            if(S.manual?.en?.[k]&&S.t[k+'_en']!=null)return S.t[k+'_en'];
+            if(S.manual?.hi?.[k]&&S.t[k+'_hi']!=null)return S.t[k+'_hi'];
+            return T(k,'en')||T(k,'hi');
+        };
+        try { const x = JSON.parse(localStorage.getItem('tri3') || 'null'); if (x) Object.assign(S, x) } catch (e) { }
+        S.previewLang = S.previewLang || S.lang;
+        S.lang = 'en';
+        S.manual = S.manual || {}; S.manual.hi = S.manual.hi || {}; S.manual.en = S.manual.en || {};
+        S.uppercaseFields = S.uppercaseFields || {};
+        S.fieldSource = S.fieldSource || {};
+        S.hindiTranslation = S.hindiTranslation || {};
+        S.hindiTranslation.nm = !!S.hindiTranslation.nm; S.hindiTranslation.pob = !!S.hindiTranslation.pob;
+        for(const lang of ['hi','en'])for(const fullKey of Object.keys(S.t)){const suffix='_'+lang;if(fullKey.endsWith(suffix)){const key=fullKey.slice(0,-suffix.length);if(S.manual[lang][key]&&isAllCapsLatin(S.t[fullKey]))S.uppercaseFields[key]=true}}
+        const save = () => { try { localStorage.setItem('tri3', JSON.stringify(S)) } catch (e) { try { const c = { ...S, charts: S.charts.map(c => ({ ...c, img: '' })) }; localStorage.setItem('tri3', JSON.stringify(c)) } catch (x) { } } };
+        let st; const later = () => { clearTimeout(st); st = setTimeout(save, 500) };
+        /* ---------- data ---------- */
+        const MH = 'जनवरी फ़रवरी मार्च अप्रैल मई जून जुलाई अगस्त सितंबर अक्टूबर नवंबर दिसंबर'.split(' '), ME = 'January February March April May June July August September October November December'.split(' ');
+        const PH = 'सूर्य,चंद्र,मंगल,बुध,गुरु,शुक्र,शनि,राहु,केतु'.split(','), PE = 'Sun,Moon,Mars,Mercury,Jupiter,Venus,Saturn,Rahu,Ketu'.split(',');
+        const HH = 'प्रथम,द्वितीय,तृतीय,चतुर्थ,पंचम,षष्ठ,सप्तम,अष्टम,नवम,दशम,एकादश,द्वादश'.split(','), HE = '1st,2nd,3rd,4th,5th,6th,7th,8th,9th,10th,11th,12th'.split(',');
+        const SH = 'मेष,वृषभ,मिथुन,कर्क,सिंह,कन्या,तुला,वृश्चिक,धनु,मकर,कुंभ,मीन'.split(','), SE = 'Aries,Taurus,Gemini,Cancer,Leo,Virgo,Libra,Scorpio,Sagittarius,Capricorn,Aquarius,Pisces'.split(',');
+        const CHH = 'उच्च,नीच,अस्त,वक्री,स्वराशि,मूलत्रिकोण,बलवान,पीड़ित,शुभ दृष्टि वाला,पाप दृष्टि वाला,अन्य ग्रह से युत'.split(','), CHE = 'exalted,debilitated,combust,retrograde,in its own sign,in moolatrikona,strong,afflicted,aspected by benefics,aspected by malefics,conjunct another planet'.split(',');
+        const CD = {
+            D1: ['लग्न', 'Lagna', 'आपकी मूल जन्म कुंडली – शरीर, स्वभाव और पूरे जीवन की दिशा।', 'Your main birth chart – body, nature and overall direction of life.'],
+            D2: ['होरा', 'Hora', 'धन और संपत्ति का विश्लेषण।', 'Wealth and assets.'], D3: ['द्रेष्काण', 'Drekkana', 'भाई-बहन, साहस और प्रयासों का विश्लेषण।', 'Siblings, courage and efforts.'],
+            D4: ['चतुर्थांश', 'Chaturthamsha', 'घर, भूमि-संपत्ति और भाग्य।', 'Home, property and fortune.'], D5: ['पंचमांश', 'Panchamsha', 'विद्या, रचनात्मकता, यश और पूर्व-पुण्य।', 'Learning, creativity, fame and past merit.'],
+            D6: ['षष्ठांश', 'Shashthamsha', 'स्वास्थ्य, रोग, शत्रु और ऋण।', 'Health, disease, enemies and debts.'], D7: ['सप्तांश', 'Saptamsha', 'संतान और वंश।', 'Children and lineage.'],
+            D8: ['अष्टमांश', 'Ashtamsha', 'आयु, अचानक घटनाएँ और गुप्त विषय।', 'Longevity, sudden events and hidden matters.'], D9: ['नवमांश', 'Navamsha', 'विवाह, जीवनसाथी और ग्रहों की असली शक्ति।', 'Marriage, spouse and the true strength of planets.'],
+            D10: ['दशमांश', 'Dashamsha', 'करियर, कर्म और सामाजिक पद।', 'Career, karma and professional status.'], D11: ['एकादशांश', 'Ekadashamsha', 'आय-लाभ और उपलब्धियाँ।', 'Gains and achievements.'],
+            D12: ['द्वादशांश', 'Dwadashamsha', 'माता-पिता और पूर्वज।', 'Parents and ancestry.'], D16: ['षोडशांश', 'Shodashamsha', 'वाहन, सुख-सुविधाएँ और मानसिक सुख।', 'Vehicles, comforts and inner contentment.']
+        };
+        const VA = ['जन्मदिन से अगले जन्मदिन तक के एक वर्ष का फल।', 'Results of one year, from birthday to next birthday.'];
+        const AR = [['per', 'व्यक्तित्व', 'Personality', [
+            'शांत व संतुलित|Calm & composed|आपका स्वभाव शांत, विनम्र और संतुलित रहेगा।|Your nature will be calm, polite and balanced.',
+            'आत्मविश्वासी व प्रभावशाली|Confident & influential|आप साहसी, आत्मविश्वासी और नेतृत्व करने वाले व्यक्ति हैं।|You are bold, confident and a natural leader.',
+            'बुद्धिमान व मननशील|Intelligent & reflective|आप तेज़ बुद्धि वाले और हर बात सोच-समझकर करने वाले हैं।|You are sharp-minded and think before you act.',
+            'भावनात्मक रूप से संवेदनशील|Emotionally sensitive|आप दिल से सोचने वाले, संवेदनशील और रिश्तों को महत्व देने वाले हैं।|You feel deeply, are sensitive and value relationships.',
+            'आकर्षक व सामाजिक|Charismatic & sociable|आपका व्यक्तित्व आकर्षक है और आप लोगों से जल्दी घुल-मिल जाते हैं।|You have a charming personality and mix easily with people.',
+            'स्वतंत्र व दृढ़-संकल्पी|Independent & strong-willed|आप स्वतंत्र सोच वाले हैं, पर कभी-कभी ज़िद और गुस्सा हावी हो सकता है।|You think independently, though stubbornness or anger may sometimes take over.',
+            'धैर्यवान व स्थिरचित्त|Patient & steady|आप कठिन परिस्थितियों में भी धैर्य और स्थिरता बनाए रखते हैं।|You remain patient and steady even in difficult situations.',
+            'सृजनशील व कल्पनाशील|Creative & imaginative|आपकी कल्पनाशक्ति अच्छी है और आप नए विचारों से समाधान खोजते हैं।|You have a vivid imagination and find solutions through fresh ideas.',
+            'व्यावहारिक व अनुशासित|Practical & disciplined|आप योजनाबद्ध ढंग से काम करते हैं और जिम्मेदारियों को गंभीरता से लेते हैं।|You work methodically and take your responsibilities seriously.',
+            'सहृदय व सहयोगी|Compassionate & supportive|आप दूसरों की भावनाओं को समझते हैं और जरूरत के समय साथ देते हैं।|You understand others’ feelings and offer support when it is needed.',
+            'जिज्ञासु व खुले विचारों वाले|Curious & open-minded|आप नई बातें सीखने और अलग-अलग दृष्टिकोण जानने के लिए उत्सुक रहते हैं।|You are eager to learn and explore different points of view.',
+            'विश्लेषणात्मक व अंतर्दृष्टिपूर्ण|Analytical & insightful|आप तथ्यों को ध्यान से परखते हैं और सोच-समझकर निष्कर्ष निकालते हैं।|You examine details carefully and reach thoughtful conclusions.',
+            'महत्वाकांक्षी व विकासोन्मुख|Ambitious & growth-oriented|आप बड़े लक्ष्य तय करते हैं और लगातार आगे बढ़ने का प्रयास करते हैं।|You set meaningful goals and keep working toward growth.',
+            'कूटनीतिक व कुशल संवादक|Diplomatic & tactful|आप संवेदनशील परिस्थितियों में भी संतुलित और सम्मानजनक ढंग से बात करते हैं।|You communicate with tact and respect, even in sensitive situations.',
+            'दृढ़ व अनुकूलनशील|Resilient & adaptable|आप बदलावों के अनुसार खुद को ढालते हैं और कठिनाइयों से उबरते हैं।|You adapt to change and recover steadily from setbacks.']],
+        ['life', 'जीवनशैली', 'Lifestyle', [
+            'विलासितापूर्ण|Luxurious|आपको सुख-सुविधाओं और आराम से भरपूर जीवनशैली मिल सकती है।|You may enjoy a lifestyle with a high level of comfort and luxury.',
+            'आरामदायक|Comfortable|जीवन आरामदायक रह सकता है और घर या वाहन से जुड़े अच्छे अवसर बन सकते हैं।|You may enjoy a comfortable lifestyle, with favorable prospects for a home or vehicle.',
+            'संतुलित|Balanced|जीवनशैली संतुलित रह सकती है और दैनिक ज़रूरतें सहजता से पूरी हो सकती हैं।|Your lifestyle may remain balanced, with everyday needs comfortably met.',
+            'सादा व स्थिर|Modest & steady|जीवन सादा और स्थिर रह सकता है; सुविधाएँ निरंतर प्रयास से बढ़ेंगी।|You may prefer a modest, steady lifestyle, with comforts built through consistent effort.',
+            'आर्थिक सीमाओं के साथ|Financially constrained|कुछ सुविधाओं के लिए सावधानीपूर्वक योजना और प्राथमिकताएँ तय करना उपयोगी रहेगा।|Careful planning and clear priorities may be needed to manage limited resources.',
+            'धीरे-धीरे सुधार|Gradual improvement|शुरुआती चुनौतियों के बाद जीवनस्तर में धीरे-धीरे सुधार हो सकता है।|Your standard of living may improve steadily after an initially challenging period.',
+            'बचत-उन्मुख|Savings-oriented|आप सोच-समझकर खर्च करने और भविष्य के लिए बचत करने को प्राथमिकता दे सकते हैं।|You may prioritize thoughtful spending and saving for the future.',
+            'अनुभव-प्रधान|Experience-focused|आप भौतिक सुविधाओं के साथ-साथ यात्रा, सीखने और नए अनुभवों को महत्व दे सकते हैं।|You may value travel, learning, and new experiences alongside material comforts.',
+            'परिवार-केंद्रित|Family-centered|आपकी जीवनशैली परिवार की ज़रूरतों, साथ और साझा सुख-सुविधाओं के इर्द-गिर्द रह सकती है।|Your lifestyle may center on family needs, togetherness, and shared comforts.',
+            'न्यूनतमवादी|Minimalist|आप सादगी और उपयोगी चीज़ों को प्राथमिकता देकर संतोष पा सकते हैं।|You may find satisfaction in simplicity and keeping what is useful and meaningful.']],
+        ['health', 'स्वास्थ्य', 'Health', [
+            'उत्तम स्वास्थ्य|Strong overall health|स्वास्थ्य अच्छा रह सकता है और रोग-प्रतिरोधक क्षमता मज़बूत बनी रह सकती है।|Your overall health may be strong, with good resilience.',
+            'अच्छा स्वास्थ्य|Good health|स्वास्थ्य सामान्यतः अच्छा रह सकता है और छोटी परेशानियाँ जल्दी संभल सकती हैं।|Your health may generally be good, with minor issues resolving quickly.',
+            'स्थिर स्वास्थ्य|Generally stable health|स्वास्थ्य स्थिर रह सकता है; नियमित दिनचर्या लाभकारी होगी।|Your health may remain generally stable, supported by a regular routine.',
+            'विशेष ध्यान आवश्यक|Health needs attention|स्वास्थ्य पर ध्यान दें और खान-पान, नींद व दिनचर्या को बेहतर बनाएँ।|Give your health attention and maintain supportive habits around food, sleep, and routine.',
+            'तनाव के प्रति संवेदनशील|Stress-sensitive|तनाव का असर स्वास्थ्य पर पड़ सकता है; विश्राम और तनाव-प्रबंधन उपयोगी रहेंगे।|Stress may affect your well-being, so rest and stress management may help.',
+            'नियमित जाँच उपयोगी|Preventive check-ups recommended|समय-समय पर जाँच कराना और स्वास्थ्य संबंधी सलाह का पालन करना उपयोगी रहेगा।|Regular check-ups and following professional health guidance may be beneficial.',
+            'सक्रिय जीवनशैली|Active lifestyle|शारीरिक गतिविधि और नियमित व्यायाम आपकी सेहत को सहारा दे सकते हैं।|Physical activity and regular exercise may support your well-being.',
+            'विश्राम व स्वास्थ्य-सुधार|Rest and recovery|पर्याप्त विश्राम और संतुलित दिनचर्या बनाए रखना आपके लिए विशेष रूप से उपयोगी हो सकता है।|Adequate rest and a balanced routine may be especially helpful for you.',
+            'निवारक देखभाल पर ध्यान|Prevention-focused care|स्वस्थ आदतें और समय पर देखभाल अपनाने से सेहत बनाए रखने में मदद मिल सकती है।|Healthy habits and timely care may help you maintain your well-being.',
+            'बदलते स्वास्थ्य-रुझान|Variable health patterns|ऊर्जा और स्वास्थ्य में उतार-चढ़ाव हो सकते हैं; नियमित दिनचर्या पर ध्यान दें।|Your energy and well-being may fluctuate, so a consistent routine may help.']],
+        ['study', 'शिक्षा', 'Education', [
+            'उत्कृष्ट शैक्षणिक क्षमता|Strong academic potential|तेज़ समझ और अच्छी याददाश्त पढ़ाई में आपकी मदद कर सकती है।|Strong comprehension and memory may support your academic progress.',
+            'अच्छी प्रगति|Good academic progress|नियमित मेहनत से पढ़ाई में अच्छे परिणाम मिल सकते हैं।|Consistent effort may lead to good academic results.',
+            'संतुलित प्रगति|Steady progress|परिणाम स्थिर रह सकते हैं; एकाग्रता बढ़ाने से और सुधार हो सकता है।|Your progress may be steady, with improved focus bringing further gains.',
+            'प्रतियोगी परीक्षाओं के अनुकूल|Competitive exam potential|प्रतियोगी परीक्षाओं में अच्छा प्रदर्शन करने के अवसर बन सकते हैं।|You may have favorable opportunities to perform well in competitive examinations.',
+            'एकाग्रता पर काम आवश्यक|Focus needs attention|नियमित अभ्यास और व्यवस्थित अध्ययन से एकाग्रता बेहतर हो सकती है।|Regular practice and structured study habits may improve your focus.',
+            'निरंतर प्रयास से प्रगति|Progress through persistence|पढ़ाई में रुकावटें या बदलाव आ सकते हैं; धैर्य और निरंतरता से मदद मिलेगी।|You may encounter delays or changes; patience and persistence can help.',
+            'अनुशासित अध्ययन|Disciplined learner|समय-सारणी और नियमित अभ्यास अपनाने से आप बेहतर परिणाम पा सकते हैं।|A study schedule and regular practice may help you achieve stronger results.',
+            'व्यावहारिक व कौशल-आधारित|Practical and skill-based|व्यावहारिक गतिविधियों और कौशल-आधारित अध्ययन से आप बेहतर सीख सकते हैं।|You may learn especially well through practical and skill-based study.',
+            'रचनात्मक व शोध-उन्मुख|Creative and research-oriented|रचनात्मक सोच और विषयों की गहराई से पड़ताल आपकी सीखने की क्षमता को बढ़ा सकती है।|Creative thinking and in-depth exploration may strengthen your learning.',
+            'मार्गदर्शन से लाभ|Benefits from guidance|स्पष्ट दिशा और समय-समय पर मार्गदर्शन से पढ़ाई में आपकी प्रगति बेहतर हो सकती है।|Clear direction and regular guidance may support your academic progress.']],
+        ['career', 'करियर', 'Career', [
+            'उन्नति व नेतृत्व की संभावनाएँ|Career advancement & leadership|ऊँचे पद, मान-सम्मान और नेतृत्व की ज़िम्मेदारियों के अवसर बन सकते हैं।|Opportunities for advancement, recognition, and leadership may arise.',
+            'स्थिर रोजगार|Stable employment|करियर स्थिर रह सकता है और निरंतर प्रयास से धीरे-धीरे प्रगति हो सकती है।|Your career may remain stable, with gradual progress through consistent effort.',
+            'उद्यमिता में सफलता|Entrepreneurial success|अपना व्यवसाय या स्वतंत्र कार्य आपके कौशल के अनुकूल हो सकता है।|Business ownership or independent work may suit your strengths.',
+            'सरकारी व सार्वजनिक सेवा|Government & public service|सरकारी, प्रशासनिक या सार्वजनिक सेवा के क्षेत्रों में अवसर बन सकते हैं।|Opportunities may arise in government, administration, or public service.',
+            'चुनौतियों के बाद सफलता|Progress after challenges|शुरुआत में कुछ रुकावटें आ सकती हैं, पर धैर्य से आगे प्रगति संभव है।|You may face early challenges, with progress developing through persistence.',
+            'करियर दिशा स्पष्ट करना|Career direction to be clarified|अपनी रुचि और क्षमताओं के अनुसार सही क्षेत्र चुनने से आगे बढ़ने में मदद मिलेगी।|Clarifying your direction around your interests and strengths may help you progress.',
+            'रचनात्मक व स्वतंत्र कार्य|Creative & independent work|रचनात्मक सोच और स्वायत्तता वाले काम में आपकी क्षमता अच्छी तरह उभर सकती है।|Your strengths may stand out in creative work that offers autonomy.',
+            'शिक्षण व मार्गदर्शन|Teaching & mentorship|शिक्षण, प्रशिक्षण या दूसरों का मार्गदर्शन करने वाले कार्य अनुकूल हो सकते हैं।|Teaching, training, or mentoring roles may be a good fit.',
+            'विश्लेषणात्मक व तकनीकी भूमिकाएँ|Analytical & technical roles|तथ्यों, समस्या-समाधान और तकनीकी कौशल की आवश्यकता वाले काम अनुकूल हो सकते हैं।|Roles involving analysis, problem-solving, and technical skills may suit you.',
+            'सेवा व सामुदायिक योगदान|Service & community impact|लोगों की सहायता या समुदाय के लिए काम करने वाले क्षेत्रों में संतोष मिल सकता है।|Work that supports people or benefits the community may feel rewarding.']],
+        ['love', 'प्रेम व वैवाहिक जीवन', 'Love & Marriage', [
+            'सामंजस्यपूर्ण संबंध|Harmonious relationship|प्रेम और वैवाहिक जीवन में अपनापन रह सकता है और जीवनसाथी का सहयोग मिल सकता है।|Your relationship may feel harmonious, with support from your partner.',
+            'प्रेम विवाह की संभावना|Possibility of love marriage|प्रेम संबंध के विवाह में बदलने की संभावना बन सकती है।|A romantic relationship may have the potential to lead to marriage.',
+            'अच्छा संबंध, कभी-कभी चुनौतियाँ|Positive with occasional challenges|संबंध सामान्यतः अच्छे रह सकते हैं; कभी-कभी मतभेदों को संवाद से सुलझाना होगा।|The relationship may be positive overall, with occasional differences best handled through communication.',
+            'विवाह में संभावित देरी|Marriage may be delayed|विवाह में कुछ देरी संभव है; धैर्य रखने से अनुकूल साथी मिलने की संभावना रहती है।|Marriage may be delayed, while patience may help you find a compatible partner.',
+            'स्थिरता व आपसी विश्वास|Stability & mutual trust|संबंध धीरे-धीरे मज़बूत हो सकता है और विश्वास से निकटता बढ़ सकती है।|A relationship may strengthen gradually as trust and closeness grow.',
+            'संवाद में सावधानी|Careful communication needed|गलतफ़हमी से बचने के लिए बातचीत स्पष्ट रखें और निर्णय सोच-समझकर लें।|Clear communication and thoughtful decisions may help prevent misunderstandings.',
+            'विश्वास व संवाद|Trust & communication|खुलकर और सम्मानपूर्वक बातचीत करने से संबंध में निकटता बढ़ सकती है।|Open, respectful communication may deepen the bond.',
+            'सहयोगी जीवनसाथी|Supportive partnership|आपसी सहयोग और साझा ज़िम्मेदारियाँ संबंध को संतुलित बनाए रखने में मदद कर सकती हैं।|Mutual support and shared responsibilities may help create a balanced partnership.',
+            'निकटता व व्यक्तिगत संतुलन|Closeness & personal balance|संबंध में निकटता के साथ व्यक्तिगत रुचियों और सीमाओं का सम्मान उपयोगी रहेगा।|The relationship may benefit from closeness alongside respect for individual interests and boundaries.',
+            'नए संबंध की संभावना|Opportunity for a new relationship|नए परिचय या संबंध के लिए अवसर बन सकते हैं; अनुकूलता समझने के लिए समय लें।|Opportunities for a new connection may arise; take time to understand compatibility.']],
+        ['fin', 'धन व वित्त', 'Finance', [
+            'मज़बूत वित्तीय संभावनाएँ|Strong financial prospects|आय के अच्छे अवसर और संपत्ति बनाने की संभावना रह सकती है।|You may have favorable earning opportunities and potential to build assets.',
+            'अच्छी आय व बचत|Good income & savings|आय अच्छी रह सकती है और योजना के साथ बचत करना संभव हो सकता है।|Income may be good, with savings possible through planning.',
+            'संतुलित वित्त|Balanced finances|आय और खर्च में संतुलन बना रह सकता है।|Your income and expenses may remain balanced.',
+            'स्थिर, सीमित वृद्धि|Steady, modest growth|आय और खर्च करीब रह सकते हैं; बजट से वित्तीय स्थिरता बनाए रखने में मदद मिलेगी।|Income and expenses may be closely matched; budgeting can support stability.',
+            'वित्तीय योजना आवश्यक|Financial planning needed|खर्च बढ़ सकते हैं, इसलिए बचत और सोच-समझकर खर्च करने पर ध्यान दें।|Expenses may rise, so focus on saving and thoughtful spending.',
+            'आय में उतार-चढ़ाव|Variable income|आय में बदलाव हो सकता है; जोखिम भरे निवेश से सावधानी रखना उपयोगी रहेगा।|Income may fluctuate, so caution with high-risk investments may be helpful.',
+            'दीर्घकालीन संपत्ति निर्माण|Long-term wealth building|नियमित बचत और दीर्घकालीन योजना से संपत्ति धीरे-धीरे बढ़ सकती है।|Regular saving and long-term planning may help build wealth over time.',
+            'आय के अनेक स्रोत|Multiple income streams|एक से अधिक आय-स्रोत विकसित करने के अवसर बन सकते हैं।|Opportunities to develop more than one source of income may arise.',
+            'व्यवसाय से आय|Business income|व्यवसाय या स्वतंत्र कार्य से आय बढ़ाने की संभावना बन सकती है।|Business or independent work may offer opportunities to increase income.',
+            'ऋण व देनदारियों का प्रबंधन|Managing debt & obligations|देनदारियों पर नज़र रखना और योजनाबद्ध भुगतान करना वित्तीय दबाव कम कर सकता है।|Tracking obligations and planning repayments may help reduce financial pressure.']],
+        ['fam', 'परिवार', 'Family', [
+            'सौहार्दपूर्ण पारिवारिक जीवन|Harmonious family life|परिवार में प्रेम, सहयोग और आपसी समझ का माहौल रह सकता है।|Family life may be loving, supportive, and understanding.',
+            'माता-पिता व बड़ों का सहयोग|Support from parents & elders|माता-पिता और परिवार के बड़ों का सहयोग मिल सकता है।|You may receive support from parents and senior family members.',
+            'महत्वपूर्ण पारिवारिक ज़िम्मेदारियाँ|Significant family responsibilities|परिवार की ज़िम्मेदारियाँ बढ़ सकती हैं, जिन्हें आप धैर्य से निभा सकते हैं।|Family responsibilities may increase, and you may handle them with patience.',
+            'बातचीत से सुलझते मतभेद|Differences resolved through communication|कभी-कभी मतभेद हो सकते हैं; शांत बातचीत से उन्हें सुलझाने में मदद मिलेगी।|Occasional differences may arise, and calm communication may help resolve them.',
+            'संतान से सुख|Fulfillment through children|संतान से जुड़ी उपलब्धियों और साथ से खुशी मिल सकती है।|Children may bring happiness through their companionship and achievements.',
+            'परिवार से दूर रहना|Periods away from family|काम या अन्य कारणों से परिवार से दूर रहने की स्थिति बन सकती है।|Work or other circumstances may lead to periods living away from family.',
+            'करीबी पारिवारिक बंधन|Close family bonds|परिवार के सदस्यों के साथ निकटता और सहयोग का रिश्ता मज़बूत हो सकता है।|Close, supportive relationships with family members may strengthen.',
+            'भाई-बहनों व रिश्तेदारों का सहयोग|Support from siblings & relatives|भाई-बहनों या रिश्तेदारों से सहयोग और उपयोगी साथ मिल सकता है।|Siblings or relatives may offer support and practical help.',
+            'देखभाल की ज़िम्मेदारियाँ|Caregiving responsibilities|परिवार के किसी सदस्य की देखभाल में समय और ध्यान देना पड़ सकता है।|You may need to devote time and care to a family member.',
+            'घर व साझा संपत्ति पर ध्यान|Focus on home & shared assets|घर, संपत्ति या परिवार की साझा योजनाओं पर ध्यान बढ़ सकता है।|Your focus may turn toward the home, property, or shared family plans.']]
+        ].map(a => [a[0], a[1], a[2], a[3].map(s => s.split('|'))]);
+        const LIB = {
+            z: ['सुबह जल्दी उठें और सूर्य को जल चढ़ाएँ|Wake early and offer water to the Sun', 'रोज़ 5 मिनट शांत बैठकर मंत्र जप या ध्यान करें|Sit quietly for 5 minutes daily for mantra chanting or meditation', 'माता-पिता और बड़ों का आशीर्वाद लें|Seek the blessings of parents and elders', 'शनिवार को ज़रूरतमंद को भोजन या काला तिल दान करें|Donate food or black sesame to the needy on Saturdays', 'गाय, कुत्ते या पक्षियों को भोजन दें|Feed cows, dogs or birds', 'मंगलवार/शनिवार को हनुमान चालीसा पढ़ें|Recite Hanuman Chalisa on Tuesdays/Saturdays', 'घर में रोज़ दीपक जलाएँ|Light a lamp at home daily', 'झूठ बोलने और किसी का दिल दुखाने से बचें|Avoid lying and hurting others'],
+            d: ['बिना जाँचे महँगे रत्न या ताबीज़ न पहनें|Do not wear costly gems or amulets without proper checking', 'बड़े आर्थिक निर्णय गुस्से या जल्दबाज़ी में न लें|Do not take big money decisions in anger or haste', 'अनजान लोगों पर अंधा भरोसा न करें|Do not blindly trust strangers', 'नशे और देर रात जागने की आदत से बचें|Avoid intoxicants and late nights', 'किसी का अपमान या बुराई न करें|Do not insult or speak ill of others', 'डर या अंधविश्वास में गलत उपाय न करें|Do not follow wrong remedies out of fear or superstition', 'बिना सलाह के बड़ा जोखिम या निवेश न करें|Do not take big risks or investments without advice', 'स्वास्थ्य समस्या में केवल उपायों पर निर्भर न रहें, डॉक्टर से मिलें|Do not rely only on remedies for health issues; consult a doctor']
+        };
+        const NAAM_JAPA_ENTRY = 'नाम जप करें|Personalized Naam Japa';
+        S.zeroNaamJapa = S.zeroNaamJapa || {};
+        if(!Array.isArray(S.zeroNaamJapa.entries)){
+            const legacy=S.zeroNaamJapa,committed=Object.prototype.hasOwnProperty.call(legacy,'committed')?!!legacy.committed:!!(legacy.selected&&String(legacy.name||'').trim()&&String(legacy.mantra||'').trim());
+            S.zeroNaamJapa.entries=(legacy.name||legacy.mantra)?[{id:1,name:String(legacy.name||''),mantra:String(legacy.mantra||''),committed,controls:!!(legacy.selected||committed),lines:legacy.lines||{hi:'',en:''},translations:{}}]:[];
+        }
+        S.zeroNaamJapa.entries.forEach((entry,index)=>{entry.id=entry.id??index+1;entry.name=String(entry.name||'');entry.mantra=String(entry.mantra||'');entry.committed=!!entry.committed;entry.controls=entry.controls??entry.committed;entry.translateHindi=!!entry.translateHindi;entry.lines=entry.lines||{hi:'',en:''};entry.translations=entry.translations||{}});
+        S.zeroNaamJapa.nextId=Math.max(Number(S.zeroNaamJapa.nextId)||1,...S.zeroNaamJapa.entries.map(entry=>Number(entry.id)||0))+1;
+        const NAAM_JAPA_SUGGESTIONS_KEY='tri3NaamJapaSuggestionsV1';
+        function getNaamJapaSuggestions(){try{const entries=JSON.parse(localStorage.getItem(NAAM_JAPA_SUGGESTIONS_KEY)||'[]');return Array.isArray(entries)?entries.filter(entry=>entry&&typeof entry.name==='string'&&typeof entry.mantra==='string'&&entry.name.trim()&&entry.mantra.trim()).slice(0,100):[]}catch(e){return []}}
+        function rememberNaamJapaSuggestion(name,mantra){
+            const normalized={name:String(name||'').trim().replace(/\s+/g,' '),mantra:String(mantra||'').trim().replace(/\s+/g,' ')};
+            if(!normalized.name||!normalized.mantra)return;
+            try{const entries=getNaamJapaSuggestions().filter(entry=>entry.name.toLocaleLowerCase()!==normalized.name.toLocaleLowerCase()||entry.mantra.toLocaleLowerCase()!==normalized.mantra.toLocaleLowerCase());localStorage.setItem(NAAM_JAPA_SUGGESTIONS_KEY,JSON.stringify([normalized,...entries].slice(0,100)))}catch(e){}
+            updateNaamJapaClearButton();
+        }
+        function updateNaamJapaClearButton(){const button=$('#clearNaamJapaSuggestions');if(button)button.disabled=!getNaamJapaSuggestions().length}
+        S.libSelected = S.libSelected || { z:{}, d:{} };
+        S.libSelected.z = S.libSelected.z || {}; S.libSelected.d = S.libSelected.d || {};
+        for(const group of ['z','d'])LIB[group].forEach((entry,i)=>{
+            const parts=entry.split('|'),key=group==='z'?'zero':'dont';
+            if(['hi','en'].every((lang,index)=>String(S.t[key+'_'+lang]||'').split(/\r?\n/).includes(parts[index])))S.libSelected[group][i]=true;
+        });
+        const previousZeroOptions=LIB.z.slice(),previousDontOptions=LIB.d.slice();
+        const addedZeroOptions=[
+            'दीपदान करें|Offer Deep Daan (lamp offering)',
+            'ज़रूरतमंदों को ऊनी कंबल या कपड़े दान करें|Donate woollen blankets or clothing to people in need',
+            'बुधवार को हरी पत्तेदार सब्ज़ियाँ|Green leafy vegetables on Wednesdays',
+            'बुधवार को गणेश पूजा करें|Perform Ganesh Puja on Wednesdays',
+            'विष्णु सहस्रनाम का प्रतिदिन पाठ करें; संभव न हो तो गुरुवार को करें|Recite the Vishnu Sahasranama daily; if that is not possible, recite it on Thursdays',
+            'दुर्गा कवच का प्रतिदिन पाठ करें; संभव न हो तो मंगलवार या शनिवार को करें|Recite the Durga Kavach daily; if that is not possible, recite it on Tuesdays or Saturdays',
+            'शिवलिंग के गर्भगृह में गहन ध्यान करें|Meditate deeply inside the garbhagriha (sanctum) of a Shiva lingam',
+            'हनुमान चालीसा का उच्च तीव्रता से पाठ करें|Recite the Hanuman Chalisa with high intensity',
+            'शनिवार का व्रत रखें और पूरे दिन बिना नमक का भोजन करें|Observe a Saturday fast, eating all meals without salt throughout the day',
+            'रुद्राष्टकम का प्रतिदिन पाठ करें; संभव न हो तो सोमवार को करें|Recite the Rudrashtakam daily; if that is not possible, recite it on Mondays',
+            'श्रीसूक्त का मंगलवार को या प्रतिदिन पाठ करें|Recite the Shri Sukta on Tuesdays or daily',
+            NAAM_JAPA_ENTRY
+        ];
+        const duplicateZeroOptions=new Set([previousZeroOptions[1],previousZeroOptions[5],previousZeroOptions[6]]);
+        for(const lang of ['hi','en']){
+            const lines=String(S.t['zero_'+lang]||'').split(/\r?\n/);
+            const index=lang==='hi'?0:1;
+            S.t['zero_'+lang]=lines.filter(line=>!([...duplicateZeroOptions].some(entry=>entry.split('|')[index]===line))).join('\n').replace(/^\n+|\n+$/g,'');
+            const oldDontLines=new Set(previousDontOptions.map(entry=>entry.split('|')[index]));
+            S.t['dont_'+lang]=String(S.t['dont_'+lang]||'').split(/\r?\n/).filter(line=>!oldDontLines.has(line)).join('\n').replace(/^\n+|\n+$/g,'');
+        }
+        const retainedSelectedZero=new Set(previousZeroOptions.filter((entry,i)=>S.libSelected.z[i]&&!duplicateZeroOptions.has(entry)));
+        LIB.z=previousZeroOptions.filter(entry=>!duplicateZeroOptions.has(entry)).concat(addedZeroOptions);
+        LIB.d=[];
+        S.libSelected.z={};S.libSelected.d={};
+        LIB.z.forEach((entry,i)=>{
+            const [hi,en]=entry.split('|');
+            const inText=['hi','en'].every((lang,index)=>String(S.t['zero_'+lang]||'').split(/\r?\n/).includes(index===0?hi:en));
+            if(retainedSelectedZero.has(entry)||inText)S.libSelected.z[i]=true;
+        });
+        const naamJapaIndex=LIB.z.indexOf(NAAM_JAPA_ENTRY);
+        if(S.zeroNaamJapa.entries.some(entry=>entry.committed))S.libSelected.z[naamJapaIndex]=true;
+        /* ---------- helpers ---------- */
+        const fmt = (y, m, d) => w(`${d} ${MH[m - 1]} ${y}`, `${d} ${ME[m - 1]} ${y}`);
+        const dob = () => (S.g.dob || '').split('-').map(Number);
+        const baseYear = () => { const [y, m, d] = dob(), t = new Date(); let b = t.getFullYear(); if (new Date(b, m - 1, d) > t) b--; return b };
+        const range = n => { const [y, m, d] = dob(); if (!y || !S.g.vy) return ''; const b = +S.g.vy; return fmt(b + n - 1, m, d) + ' – ' + fmt(b + n, m, d) };
+        const mix = (h, e, m) => m === 'hi' ? h : m === 'en' ? e : m === 'both' ? e + ' / ' + h : w(h, e);
+        function ctitle(c) { if (c.type[0] === 'V') { const n = +c.type[1]; return mix('वर्षफल – वर्ष ' + n, 'Varshaphal – Year ' + n, c.mode) } const D = CD[c.type]; return mix(`${D[0]} कुंडली (${c.type})`, `${D[1]} Chart (${c.type})`, c.mode) }
+        function cabout(c) { const D = c.type[0] === 'V' ? VA : CD[c.type].slice(2); const m = c.mode === 'auto' ? S.lang : c.mode; return m === 'both' ? D[1] + ' / ' + D[0] : m === 'hi' ? D[0] : D[1] }
+        function clause(k, l) {
+            const r = S.r[k] || {}, hi = l === 'hi', x = T('rx_' + k, l), has = v => v !== '' && v != null; let c;
+            if (hi) {
+                const p = []; has(r.p) && p.push(PH[r.p]); has(r.h) && p.push(HH[r.h] + ' भाव में'); has(r.s) && p.push(SH[r.s] + ' राशि में'); has(r.c) && p.push(CHH[r.c]);
+                c = p.length ? `यह ${p.join(' ')} होने के कारण${x ? ', ' + x : ''} है।` : x ? `कारण: ${x}।` : ''
+            }
+            else {
+                let p = []; has(r.p) && p.push(PE[r.p]); has(r.h) && p.push(`placed in the ${HE[r.h]} house`); has(r.s) && p.push(`in ${SE[r.s]}`); let s = p.join(' ');
+                if (has(r.c)) s += (s ? ', ' : '') + 'being ' + CHE[r.c]; c = s ? `This is due to ${s}${x ? ', ' + x : ''}.` : x ? `Reason: ${x}.` : ''
+            }
+            return c
+        }
+        function fitTextarea(el){
+            if(!el||el.tagName!=='TEXTAREA')return;
+            el.style.height='auto';
+            el.style.height=Math.max(parseFloat(getComputedStyle(el).minHeight)||0,el.scrollHeight)+'px';
+        }
+        function fitAllTextareas(root=document){root.querySelectorAll('#form textarea').forEach(fitTextarea)}
+        function naamJapaLine(lang,entry){
+            const canTranslate=lang==='en'||entry.translateHindi,translations=entry.translations?.[lang],name=String(canTranslate&&translations?.nameSource===entry.name?translations.name:entry.name||'').trim().replace(/\s+/g,' '),mantra=String(canTranslate&&translations?.mantraSource===entry.mantra?translations.mantra:entry.mantra||'').trim().replace(/\s+/g,' ');
+            if(!name||!mantra)return '';
+            return lang==='hi'?`${name} के नाम का जप — “${mantra}” प्रतिदिन करें।`:`Naam japa of ${name} — “${mantra}” every day`;
+        }
+        function naamJapaLines(lang){return S.zeroNaamJapa.entries.filter(entry=>entry.committed).map(entry=>naamJapaLine(lang,entry)).filter(Boolean)}
+        function syncNaamJapaLines(){
+            for(const lang of ['hi','en']){
+                const lines=String(S.t['zero_'+lang]||'').split(/\r?\n/);
+                S.zeroNaamJapa.entries.forEach(entry=>{
+                    entry.lines=entry.lines||{hi:'',en:''};
+                    const previous=entry.lines[lang]||'';if(previous){const oldIndex=lines.lastIndexOf(previous);if(oldIndex>=0)lines.splice(oldIndex,1)}
+                    const next=entry.committed?naamJapaLine(lang,entry):'';
+                    if(next&&!lines.includes(next))lines.push(next);entry.lines[lang]=next;
+                });
+                S.t['zero_'+lang]=lines.join('\n').replace(/^\n+|\n+$/g,'');
+            }
+        }
+        function uniqueNaamJapaValues(entries,key){const seen=new Set();return entries.map(entry=>String(entry[key]||'').trim()).filter(value=>{const normalized=value.toLocaleLowerCase();if(!value||seen.has(normalized))return false;seen.add(normalized);return true})}
+        function naamJapaMatches(row,field,query=''){
+            const q=String(query||'').trim().toLocaleLowerCase(),history=getNaamJapaSuggestions();
+            let values=field==='name'?uniqueNaamJapaValues(history,'name'):uniqueNaamJapaValues(history.filter(item=>item.name.trim().toLocaleLowerCase()===String(row.name||'').trim().toLocaleLowerCase()),'mantra');
+            if(q)values=values.filter(value=>value.toLocaleLowerCase().includes(q));return values;
+        }
+        function naamJapaOptionMarkup(options,activeIndex=-1,selectedValue=''){
+            return options.map((option,index)=>`<button type="button" class="${index===activeIndex?'active':''}${option.type==='saved'&&option.value.toLocaleLowerCase()===String(selectedValue||'').toLocaleLowerCase()?' selected':''}" data-naam-japa-option data-kind="${option.type}" data-value="${esc(option.value)}">${esc(option.label)}</button>`).join('');
+        }
+        function openNaamJapaMenu(input,{activeIndex=null}={}){
+            if(!input)return;
+            const wrap=input.closest('.naam-japa-field-wrap'),menu=wrap?.querySelector('.naam-japa-menu'),optionsBox=menu?.querySelector('.naam-japa-options'),row=S.zeroNaamJapa.entries.find(item=>String(item.id)===input.dataset.naamJapaRow);if(!wrap||!menu||!optionsBox||!row)return;
+            const field=input.dataset.naamJapaField,q=input.value.trim(),values=naamJapaMatches(row,field,q),options=[];
+            if(q)options.push({type:'typed',value:q,label:`Use “${q}”`});
+            values.forEach(value=>options.push({type:'saved',value,label:value}));
+            if(field==='mantra'&&!q&&!options.length)return;
+            if(field==='name'&&!q&&!options.length)return;
+            const auto=activeIndex===null?(q&&values.length?1:q?0:-1):activeIndex;
+            optionsBox.innerHTML=naamJapaOptionMarkup(options,auto,field==='name'?row.name:row.mantra);menu._naamJapaOptions=options;
+            menu.style.height=Math.min(230,48+options.length*34)+'px';menu.hidden=false;input.setAttribute('aria-expanded','true');
+            bindMobileEnterSelection(input,menu,()=>{if(menu.hidden)openNaamJapaMenu(input);const active=menu.querySelector('[data-naam-japa-option].active');if(active){chooseNaamJapaOption(input,active);if(field==='mantra')commitNaamJapa(row.id)}else if(input.value.trim()&&field==='mantra')commitNaamJapa(row.id)});
+            const active=optionsBox.querySelector('button.active');active?.scrollIntoView({block:'nearest'});
+        }
+        function closeNaamJapaMenus(except=null){F_.querySelectorAll('.naam-japa-menu').forEach(menu=>{if(menu!==except){menu.hidden=true;menu.closest('.naam-japa-field-wrap')?.querySelector('input')?.setAttribute('aria-expanded','false')}})}
+        function renderNaamJapaBuilder(focusId=null,focusField='name'){
+            const root=$('#naamJapaBuilder');if(!root)return;
+            if(!S.zeroNaamJapa.entries.length)S.zeroNaamJapa.entries.push({id:S.zeroNaamJapa.nextId++,name:'',mantra:'',committed:false,lines:{hi:'',en:''}});
+            root.innerHTML=S.zeroNaamJapa.entries.map((entry,index)=>{
+                const last=index===S.zeroNaamJapa.entries.length-1,action=last?'add':'remove';
+                return `<div class="naam-japa-row" data-naam-japa-row="${esc(entry.id)}"><span>Naam japa of</span><div class="naam-japa-field-wrap"><form class="picker-keyboard-form" autocomplete="off"><input data-naam-japa-field="name" data-naam-japa-row="${esc(entry.id)}" aria-label="Name or deity" aria-expanded="false" autocomplete="off" placeholder="Name / deity" value="${esc(entry.name)}"><div class="naam-japa-menu" hidden><div class="naam-japa-options"></div></div><button type="submit" class="picker-keyboard-submit" tabindex="-1" aria-hidden="true">Select highlighted option</button></form></div><span>“</span><div class="naam-japa-field-wrap"><form class="picker-keyboard-form" autocomplete="off"><input data-naam-japa-field="mantra" data-naam-japa-row="${esc(entry.id)}" aria-label="Mantra" aria-expanded="false" autocomplete="off" placeholder="mantra here" value="${esc(entry.mantra)}"><div class="naam-japa-menu" hidden><div class="naam-japa-options"></div></div><button type="submit" class="picker-keyboard-submit" tabindex="-1" aria-hidden="true">Select highlighted option</button></form></div><span>” every day</span><label class="naam-japa-translation" title="Translate this name and mantra in Hindi PDFs"><input type="checkbox" data-naam-japa-hindi data-naam-japa-row="${esc(entry.id)}"${entry.translateHindi?' checked':''}><span>Translate to Hindi</span></label>${entry.controls?`<button type="button" class="naam-japa-action remove" data-naam-japa-action="remove" data-naam-japa-row="${esc(entry.id)}" aria-label="Remove this Naam Japa row" title="Remove">Remove</button>${last?`<button type="button" class="naam-japa-action add" data-naam-japa-action="add" data-naam-japa-row="${esc(entry.id)}" aria-label="Add another Naam Japa row" title="Add">＋ Add</button>`:''}`:''}</div>`;
+            }).join('');
+            if(focusId!=null)requestAnimationFrame(()=>root.querySelector(`[data-naam-japa-row="${CSS.escape(String(focusId))}"] [data-naam-japa-field="${focusField}"]`)?.focus());
+        }
+        function commitNaamJapa(rowId){
+            const entry=S.zeroNaamJapa.entries.find(item=>String(item.id)===String(rowId));if(!entry)return;
+            const row=$(`.naam-japa-row[data-naam-japa-row="${CSS.escape(String(rowId))}"]`),nameInput=row?.querySelector('[data-naam-japa-field="name"]'),mantraInput=row?.querySelector('[data-naam-japa-field="mantra"]');
+            const name=String(entry.name||'').trim().replace(/\s+/g,' '),mantra=String(entry.mantra||'').trim().replace(/\s+/g,' ');
+            if(!name){if(nameInput){nameInput.focus();openNaamJapaMenu(nameInput)}return}if(!mantra){if(mantraInput){mantraInput.focus();openNaamJapaMenu(mantraInput)}return}
+            entry.name=name;entry.mantra=mantra;entry.committed=true;entry.controls=true;rememberNaamJapaSuggestion(name,mantra);syncNaamJapaLines();
+            const textarea=$('#ta_zero');if(textarea){textarea.value=editorText('zero');fitTextarea(textarea)}
+            const status=$('#naamJapaStatus');if(status)status.textContent='Added to remedies · suggestions saved on this device';
+            renderNaamJapaBuilder();render();later();translateNaamJapaEntries(S.previewLang||'en').then(()=>{syncNaamJapaLines();render();later()});
+        }
+        function chooseNaamJapaOption(input,option){
+            const row=S.zeroNaamJapa.entries.find(item=>String(item.id)===input.dataset.naamJapaRow);if(!row)return;
+            const field=input.dataset.naamJapaField,value=option.dataset.value||'';input.value=value;input.setAttribute('aria-expanded','false');input.closest('.naam-japa-field-wrap').querySelector('.naam-japa-menu').hidden=true;
+            if(field==='name'){
+                row.name=value;row.mantra='';row.committed=false;const rowRoot=input.closest('.naam-japa-row'),mantraInput=rowRoot.querySelector('[data-naam-japa-field="mantra"]');mantraInput.value='';
+                const matches=uniqueNaamJapaValues(getNaamJapaSuggestions().filter(item=>item.name.trim().toLocaleLowerCase()===value.trim().toLocaleLowerCase()),'mantra');
+                if(matches.length===1){row.mantra=matches[0];mantraInput.value=matches[0];mantraInput.focus()}
+                else if(matches.length>1){mantraInput.value='';mantraInput.focus();openNaamJapaMenu(mantraInput,{activeIndex:-1})}
+                else mantraInput.focus();
+            }else{row.mantra=value;row.committed=false}
+            syncNaamJapaLines();const textarea=$('#ta_zero');if(textarea){textarea.value=editorText('zero');fitTextarea(textarea)}render();later();
+        }
+        syncNaamJapaLines();
+        function gen(k) {
+            const a = AR.find(a => a[0] === k), o = a[3][S.o[k] - 1];
+            ['hi', 'en'].forEach((l, i) => { S.t['a_' + k + '_' + l] = [o ? o[i + 2] : '', clause(k, l)].filter(Boolean).join(' ') });
+            const ta = $('#ta_' + k); if (ta) { ta.value = T('a_' + k); fitTextarea(ta) }
+        }
+        /* ---------- form ---------- */
+        const sel = (attr, list, v, ph) => `<select ${attr}><option value="">${ph}</option>${list.map((x, i) => `<option value="${i}"${v !== '' && v != null && +v === i ? ' selected' : ''}>${x}</option>`).join('')}</select>`;
+        const searchSel = (attr, list, value, placeholder, optionValues=list.map((_,i)=>String(i))) => {
+            const selectedIndex=optionValues.findIndex(item=>String(item)===String(value));
+            const hasValue=selectedIndex>=0,selected=hasValue?String(optionValues[selectedIndex]):'';
+            const label=hasValue?list[selectedIndex]:placeholder;
+            return `<div class="search-select"><input type="hidden" ${attr} value="${esc(selected)}"><button type="button" class="search-select-trigger${hasValue?' has-value':''}" data-search-trigger aria-expanded="false"><span data-search-label>${label}</span><span aria-hidden="true">⌄</span></button><div class="search-select-menu" hidden><input class="search-select-query" data-search-query placeholder="Search ${placeholder}…" autocomplete="off"><div class="search-select-options">${list.map((item,i)=>`<button type="button" data-search-option data-value="${esc(optionValues[i])}" class="${selectedIndex===i?'selected':''}">${item}</button>`).join('')}</div></div></div>`;
+        };
+        const F = (g, l, t = 'text') => t === 'time' ? `<label class="time-field">${l}<input data-g="tob" id="g_tob" value="${esc(S.g.tob)}" placeholder="Select time" readonly><div class="time-picker" hidden><div class="time-parts"><div class="time-part"><button type="button" class="time-value" data-time-part="hour">12</button><div class="time-menu" hidden><input class="time-search" placeholder="Hour…"><div class="time-options"></div></div></div><span>:</span><div class="time-part"><button type="button" class="time-value" data-time-part="minute">00</button><div class="time-menu" hidden><input class="time-search" placeholder="Min…"><div class="time-options"></div></div></div><div class="time-part ampm"><button type="button" data-val="AM">AM</button><button type="button" data-val="PM">PM</button></div></div></div></label>` : t === 'date' ? `<label class="date-field">${l}<input data-g="${g}" id="g_${g}" type="text" value="${esc(S.g[g])}" placeholder="Select date" autocomplete="off" readonly><div class="date-picker" hidden></div></label>` : `<label>${l}<input data-g="${g}" id="g_${g}" type="${t}" value="${esc(S.g[g])}"></label>`;
+        const FK = (k, l) => {
+            const field = k === 'pob' ? `<label class="place-field">${l}<input data-k="${k}" id="placeInput" autocomplete="off" placeholder="Search place, district, state or country" value="${esc(editorText(k))}"><div id="placeSuggestions" class="place-suggestions" hidden></div></label>` : `<label>${l}<input data-k="${k}" value="${esc(editorText(k))}"></label>`;
+            if(k!=='nm'&&k!=='pob')return field;
+            return `<div class="field-with-option">${field}<label class="hindi-translation-toggle" title="Allow this name/place to be translated in Hindi PDFs"><input type="checkbox" data-hindi-translation="${k}"${S.hindiTranslation[k]?' checked':''}><span>Translate to Hindi</span></label></div>`;
+        };
+        function buildForm() {
+            document.querySelectorAll('.date-picker-portal').forEach(picker=>picker.remove());
+            const L = 'English';
+            let h = `<details class="fs" open><summary>Client Details</summary><div>${FK('nm', 'Name')}<div class="row">${F('dob', 'Date of Birth', 'date')}${F('tob', 'Time of Birth', 'time')}</div>${FK('pob', 'Birth Place')}<div class="row"><label>Gender${sel('data-g="gender"', ['Female', 'Male', 'Other'], S.g.gender, 'Select gender')}</label>${F('date', 'Report Date', 'date')}</div><div class="row">${FK('lagna', 'Lagna')}${FK('rashi', 'Moon Sign')}</div><div class="row">${FK('nak', 'Nakshatra')}${FK('dasha', 'Current Dasha')}</div>${F('vy', 'Yearly report starting year (auto-filled from DOB)', 'number')}</div></details>`;
+            h += `<details class="fs"><summary>Key Summary</summary><div><textarea data-k="sum" style="min-height:110px">${esc(editorText('sum'))}</textarea></div></details>`;
+            h += `<details class="fs" open><summary>Life Areas</summary><div><p class="hint">Choose an option to generate text in English and Hindi. Add an optional reason, or edit the text below.</p>` +
+                AR.map(([k, hi, en, op]) => {
+                    const r = S.r[k] || {}; return `<div class="blk"><b>${en}</b><div class="chips"><label><input type="radio" name="o_${k}" data-o="${k}" value=""${!S.o[k] ? ' checked' : ''}><span>—</span></label>${op.map((o, i) => `<label><input type="radio" name="o_${k}" data-o="${k}" value="${i + 1}"${S.o[k] == i + 1 ? ' checked' : ''}><span>${o[1]}</span></label>`).join('')}</div>
+ <div class="rg">${searchSel(`data-r="${k}" data-f="p"`, PE, r.p, 'Planet')}${searchSel(`data-r="${k}" data-f="h"`, HE, r.h, 'House')}${searchSel(`data-r="${k}" data-f="s"`, SE, r.s, 'Sign')}${searchSel(`data-r="${k}" data-f="c"`, CHE, r.c, 'Condition')}</div>
+ <input data-rx="${k}" placeholder="Additional reason (optional)" value="${esc(editorText('rx_' + k))}"><textarea id="ta_${k}" data-k="a_${k}" style="min-height:60px;height:auto;overflow-y:hidden;resize:none;margin-top:5px">${esc(editorText('a_' + k))}</textarea></div>`
+                }).join('') + '</div></details>';
+            const chartTypeValues=Object.keys(CD).concat([1,2,3].map(n=>'V'+n));
+            const chartTypeLabels=chartTypeValues.map(type=>type[0]==='V'?`Varshaphal – Year ${type[1]}`:`${type} – ${CD[type][1]}`);
+            h += `<details class="fs" open><summary>Charts (${S.charts.length})</summary><div>` + S.charts.map(c => `<div class="blk"><div class="row">${searchSel(`data-c="${c.id}" data-f="type"`,chartTypeLabels,c.type,'Chart type',chartTypeValues)}<select data-c="${c.id}" data-f="mode">${[['auto', 'Follow PDF language'], ['hi', 'Hindi only'], ['en', 'Only English'], ['both', 'Both languages']].map(m => `<option value="${m[0]}"${c.mode === m[0] ? ' selected' : ''}>${m[1]}</option>`).join('')}</select></div>
+ <div class="chart-engine-actions"><button type="button" class="chart-generate-button" data-chart-generate="${c.id}">Generate chart</button><span class="chart-engine-status" data-chart-status="${c.id}" aria-live="polite">Chart generation uses the engine folder and requires localhost or HTTPS.</span></div>
+ <textarea data-k="c${c.id}_p" placeholder="One line per point (up to 5) – English">${esc(editorText('c' + c.id + '_p'))}</textarea><button class="sm" data-act="del" data-id="${c.id}">✕ Remove</button></div>`).join('') + `<button style="margin-top:8px;width:100%" data-act="add">+ Add chart</button></div></details>`;
+            const lib = (t, k) => {
+                const options=LIB[t].map((x,i)=>({x,i})).filter(item=>t!=='z'||item.i!==naamJapaIndex).map(({x,i})=>{
+                    const selected=!!S.libSelected[t]?.[i],label=x.split('|')[1];
+                    return `<div class="zero-remedy-option"><button class="${selected?'selected':''}" aria-pressed="${selected}" data-lib="${t}" data-i="${i}">${selected?'✓':'＋'} ${esc(label)}</button></div>`;
+                }).join('');
+                const editor=t==='z'?`<div id="naamJapaBuilder" class="naam-japa-builder"></div><div class="naam-japa-footer"><span id="naamJapaStatus" class="naam-japa-status" role="status">Enter a name and mantra, then press Enter. Suggestions stay on this device.</span><button type="button" id="clearNaamJapaSuggestions" class="naam-japa-clear" data-clear-naam-japa-suggestions${getNaamJapaSuggestions().length?'':' disabled'}>Clear suggestions</button></div>`:'';
+                return `<div class="chips${t==='z'?' zero-remedy-chips':''}">${options}</div>${editor}`;
+            };
+            h += `<details class="fs"><summary>Zero-Cost Remedies</summary><div>${lib('z')}<textarea id="ta_zero" data-k="zero" style="min-height:130px">${esc(editorText('zero'))}</textarea></div></details>`;
+            h += `<details class="fs"><summary>Precise Remedies</summary><div><textarea data-k="pre" style="min-height:130px" placeholder="Mantra, donation, gemstones, etc.">${esc(editorText('pre'))}</textarea></div></details>`;
+            h += `<details class="fs"><summary>What Not To Do</summary><div><textarea id="ta_dont" data-k="dont" style="min-height:130px">${esc(editorText('dont'))}</textarea></div></details>`;
+            $('#form').innerHTML = h;
+            renderNaamJapaBuilder();
+            document.querySelectorAll('#form textarea,#form input[data-k],#form input[data-rx]').forEach(el => el.insertAdjacentHTML('afterend', '<div class="tools"><button class="sm" data-tool="mic" title="Voice input">🎤</button><button class="sm" data-tool="wand" title="Rewrite formally">✨</button></div>'));
+            initDateTimePickers();
+            fitAllTextareas($('#form'));
+        }
+        /* ---------- report ---------- */
+        const logo = `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#b3121f" stroke-width="7" stroke-dasharray="2 2.6"/><circle cx="50" cy="50" r="38" fill="#fff" stroke="#b3121f" stroke-width="1.5"/><path d="M50 14c7 8 7 22 0 30-7-8-7-22 0-30z" fill="#b3121f" stroke="#17110f" stroke-width="2"/><circle cx="50" cy="29" r="2.5" fill="#17110f"/><g stroke="#17110f" stroke-width="2.5" fill="#fff"><path d="M18 53q16-14 30 0q-14 10-30 0zM52 53q14-14 30 0q-16 10-30 0z"/></g><circle cx="33" cy="53" r="5" fill="#b3121f"/><circle cx="67" cy="53" r="5" fill="#b3121f"/><circle cx="50" cy="63" r="1.8" fill="#b3121f"/><path d="M34 78q16 8 32 0" fill="none" stroke="#b3121f" stroke-width="1.5"/></svg>`;
+        const mh = `<div class="mh">${logo}TRINETRA</div>`;
+        const pts = t => { const l = t.split('\n').map(x => x.trim()).filter(Boolean); return l.length ? `<ol class="pts">${l.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : '' };
+        const reportText = text => `<div class="report-lines">${String(text||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>`<div class="report-point">${esc(line)}</div>`).join('')}</div>`;
+        function reportHTML(L_) {
+            const _o = S.lang; S.lang = L_; try {
+                const g = S.g;
+                const dstr = s => { const [y, m, d] = (s || '').split('-').map(Number); return y ? fmt(y, m, d) : '' };
+                const rows = [[w('नाम', 'Name'), reportInputValue('nm',L_)], [w('जन्म तिथि', 'Date of Birth'), dstr(g.dob)], [w('जन्म समय', 'Time of Birth'), g.tob], [w('जन्म स्थान', 'Place of Birth'), reportInputValue('pob',L_)],
+                [w('लिंग', 'Gender'), g.gender !== '' && g.gender != null ? w(['महिला', 'पुरुष', 'अन्य'], ['Female', 'Male', 'Other'])[g.gender] : ''], [w('लग्न', 'Lagna'), TF('lagna')], [w('राशि', 'Moon Sign'), TF('rashi')], [w('नक्षत्र', 'Nakshatra'), TF('nak')], [w('वर्तमान दशा', 'Current Dasha'), TF('dasha')], [w('रिपोर्ट तिथि', 'Report Date'), dstr(g.date)]].filter(r => r[1]);
+                let tb = ''; for (let i = 0; i < rows.length; i += 2) { const a = rows[i], b = rows[i + 1] || ['', '']; tb += `<tr><td>${a[0]}</td><td>${esc(a[1])}</td><td>${b[0]}</td><td>${esc(b[1])}</td></tr>` }
+                let h = `<div class="pg"><div class="rh">${logo}<div class="brand">TRINETRA</div><div class="rt">${w('ज्योतिष परामर्श रिपोर्ट', 'Astrology Consultation Report')}</div><div class="tag">${w('ज्योतिष · मार्गदर्शन · समाधान', 'ASTROLOGY · GUIDANCE · SOLUTIONS')}</div></div>
+ <div class="sec"><h2>${w('जातक का विवरण', 'Client Details')}</h2><table class="d">${tb || `<tr><td colspan="4">—</td></tr>`}</table></div>
+ <div class="sec"><div class="box"><b>${w('इस रिपोर्ट को कैसे पढ़ें', 'How to read this report')}</b><br>${w('हर विषय सरल भाषा में समझाया गया है, ताकि कोई भी इसे समझ सके। जहाँ ज़रूरी हुआ, ज्योतिषीय कारण (ग्रह, भाव, राशि) भी बताए गए हैं, जो जानकार पाठकों के लिए हैं। ज्योतिष संभावनाएँ बताता है, अंतिम तय भाग्य नहीं – सही कर्म और उपाय से दिशा बेहतर की जा सकती है।', 'Every topic is explained in simple language so anyone can follow it. Where useful, the astrological reasons (planet, house, sign) are also given for readers who know astrology. Astrology shows tendencies, not fixed fate – right action and remedies can improve the direction.')}</div></div>`;
+                if (T('sum')) h += `<div class="sec"><h2>${w('मुख्य सारांश', 'Key Summary')}</h2><div class="txt">${reportText(T('sum'))}</div></div>`;
+                h += '</div>';
+                let ar = ''; AR.forEach(([k, hi, en, op]) => { const o = op[S.o[k] - 1], t = T('a_' + k); if (!t) return; ar += `<div class="ar"><h3>${w(hi, en)}${o ? `<span class="lvl">${w(o[0],o[1])}</span>` : ''}</h3><div class="txt">${reportText(t)}</div></div>` });
+                if (ar) h += `<div class="pg">${mh}<h2>${w('जीवन के मुख्य क्षेत्र', 'Key Life Areas')}</h2>${ar}</div>`;
+                S.charts.forEach(c => {
+                    const p = pts(T('c' + c.id + '_p'));
+                    h += `<div class="pg">${mh}<h2>${esc(ctitle(c))}</h2>${c.type[0] === 'V' && !range(+c.type[1]) ? '' : c.type[0] === 'V' ? `<p><b>${w('अवधि', 'Period')}:</b> ${range(+c.type[1])}</p>` : ''}<p class="about">${cabout(c)}</p>${c.img ? `<img class="cimg" src="${c.img}">` : `<div class="ph">${w('चार्ट अपलोड नहीं हुआ', 'Chart not uploaded')}</div>`}${p ? `<h3>${w('मुख्य बिंदु', 'Key Points')}</h3>${p}` : ''}</div>`
+                });
+                let rm = '';
+                [['zero', 'ज़ीरो कॉस्ट उपाय', 'Zero-Cost Remedies', 'ये उपाय बिना किसी खर्च के किए जा सकते हैं।', 'These can be followed at no cost.'], ['pre', 'सटीक उपाय', 'Precise Remedies', 'आपकी कुंडली के आधार पर विशेष उपाय।', 'Specific remedies based on your kundali.'], ['dont', 'क्या न करें', 'What Not To Do', 'इन बातों से बचना आपके लिए हितकारी रहेगा।', 'Avoiding these will be good for you.']].forEach(([k, a, b, c, d]) => {
+                    const text=T(k);if(!text)return;
+                    const content=reportText(text);
+                    rm += `<div class="sec"><h2>${w(a, b)}</h2><p class="about">${w(c, d)}</p><div class="box txt">${content}</div></div>`;
+                });
+                h += `<div class="pg">${mh}${rm}<div class="ft">${w('परामर्श नंबर', 'Consultation No.')}: <b>75900 77820</b><br>${w('चैट / कॉल – दोनों विकल्प उपलब्ध', 'Chat / Call – both options available')}<br><b style="letter-spacing:.3em">TRINETRA</b><div class="dis">${w('यह रिपोर्ट मार्गदर्शन के उद्देश्य से है। यह चिकित्सा, कानूनी या वित्तीय सलाह का विकल्प नहीं है।', 'This report is for guidance only. It is not a substitute for medical, legal or financial advice.')}</div></div></div>`;
+                return h
+            } finally { S.lang = _o }
+        }
+        function render() { const previewLang=S.previewLang||S.lang; document.documentElement.lang=previewLang; $('#report').innerHTML=reportHTML(previewLang); $('#bhi').classList.toggle('on',previewLang==='hi'); $('#ben').classList.toggle('on',previewLang==='en') }
+        function reportInputValue(key,lang){
+            if(lang==='hi'&&(key==='nm'||key==='pob')&&!S.hindiTranslation[key]){
+                const source=S.fieldSource[key]||(S.manual.en?.[key]?'en':S.manual.hi?.[key]?'hi':(S.t[key+'_hi']?'hi':'en'));
+                return T(key,source)||T(key,oth(source))||T(key,lang)||T(key,oth(lang));
+            }
+            return T(key,lang)||T(key,oth(lang));
+        }
+        const translatorCache = new Map();
+        const translationTimers = new Map();
+        function typedLanguage(value, fallback=S.lang, target=null){
+            const text=String(value||'');
+            const devanagari=(text.match(/[\u0900-\u097F]/g)||[]).length;
+            const latin=(text.match(/[A-Za-z]/g)||[]).length;
+            if(devanagari && latin)return target?(target==='hi'?'en':'hi'):(devanagari>=latin?'hi':'en');
+            if(devanagari)return 'hi';
+            if(latin)return 'en';
+            return fallback;
+        }
+        async function translateNaamJapaEntries(target){
+            const rows=S.zeroNaamJapa.entries.filter(entry=>entry.committed&&String(entry.name||'').trim()&&String(entry.mantra||'').trim()&&(target!=='hi'||entry.translateHindi));if(!rows.length){if(target==='hi')syncNaamJapaLines();return true}
+            if(!('Translator' in self)){alert('This browser does not provide the on-device Translator. Use a compatible desktop Chrome or Edge browser on localhost or HTTPS with Hindi and English models available. Your Naam Japa text was not sent anywhere.');return false}
+            try{
+                for(const entry of rows){
+                    entry.translations=entry.translations||{};const cached=entry.translations[target];
+                    if(cached?.nameSource===entry.name&&cached?.mantraSource===entry.mantra)continue;
+                    const translated={};
+                    for(const field of ['name','mantra']){
+                        const value=String(entry[field]||''),source=typedLanguage(value,'en',target);
+                        if(source===target){translated[field]=value;continue}
+                        const pair=source+'-'+target;let translator=translatorCache.get(pair);
+                        if(!translator){translator=await Translator.create({sourceLanguage:source,targetLanguage:target,monitor(m){m.addEventListener('downloadprogress',e=>{document.title=`Downloading translation model ${Math.round(e.loaded*100)}% · Trinetra`})}});translatorCache.set(pair,translator)}
+                        translated[field]=await translator.translate(value);
+                    }
+                    entry.translations[target]={nameSource:entry.name,mantraSource:entry.mantra,name:translated.name,mantra:translated.mantra};
+                }
+                document.title='TRINETRA';syncNaamJapaLines();return true;
+            }catch(error){document.title='TRINETRA';alert('Could not translate the Naam Japa text on this device. Keep the page open and online while a supported browser downloads its language model, then try again.');return false}
+        }
+        async function translateTypedFields(target){
+            if(!(await translateNaamJapaEntries(target)))return false;
+            const candidates=new Map(), keys=new Set(Object.keys(S.fieldSource||{}));
+            for(const lang of ['hi','en'])for(const key of Object.keys(S.manual[lang]||{}))if(S.manual[lang][key])keys.add(key);
+            for(const key of keys){
+                if(target==='hi'&&(key==='nm'||key==='pob')&&!S.hindiTranslation[key])continue;
+                const preferred=S.fieldSource[key];
+                let storedLang=preferred, value=preferred?S.t[key+'_'+preferred]:'';
+                if(!value||!S.manual[storedLang]?.[key]){
+                    const choices=['hi','en'].filter(lang=>S.manual[lang]?.[key]&&S.t[key+'_'+lang]);
+                    if(!choices.length)continue;
+                    choices.sort((a,b)=>Number(typedLanguage(S.t[key+'_'+b],b,target)!==target)-Number(typedLanguage(S.t[key+'_'+a],a,target)!==target));
+                    storedLang=choices[0];value=S.t[key+'_'+storedLang];
+                    S.fieldSource[key]=storedLang;
+                }
+                if(!String(value).trim())continue;
+                const source=typedLanguage(value,storedLang,target);
+                if(source===target)continue;
+                const preserveNaamJapa=key==='zero'?naamJapaLines(source):[];
+                let translationValue=String(value);
+                if(preserveNaamJapa.length){const lines=translationValue.split(/\r?\n/);preserveNaamJapa.forEach(preserved=>{const lineIndex=lines.lastIndexOf(preserved);if(lineIndex>=0)lines.splice(lineIndex,1)});translationValue=lines.join('\n')}
+                candidates.set(key,{key,value,source,storedLang,translationValue,preserveNaamJapa});
+            }
+            const items=[...candidates.values()];if(!items.length)return true;
+            if(!('Translator' in self)){alert('This browser does not provide the on-device Translator. Use a compatible desktop Chrome or Edge browser on localhost or HTTPS with Hindi and English models available. Your entered text was not sent anywhere.');return false}
+            try{
+                for(const item of items){
+                    let translatedCore='';
+                    if(item.translationValue.trim()){
+                        const pair=item.source+'-'+target;
+                        let translator=translatorCache.get(pair);
+                        if(!translator){
+                            translator=await Translator.create({sourceLanguage:item.source,targetLanguage:target,monitor(m){m.addEventListener('downloadprogress',e=>{const pct=Math.round(e.loaded*100);document.title=`Downloading translation model ${pct}% · Trinetra`})}});
+                            translatorCache.set(pair,translator);
+                        }
+                        translatedCore=await translator.translate(item.translationValue);
+                    }
+                    const translated=[String(translatedCore||'').trim(),...(item.preserveNaamJapa.length?naamJapaLines(target):[])].filter(Boolean).join('\n');
+                    const current=S.t[item.key+'_'+item.storedLang];
+                    const hindiAllowed=target!=='hi'||(item.key!=='nm'&&item.key!=='pob')||S.hindiTranslation[item.key];
+                    if(hindiAllowed&&current===item.value&&S.fieldSource[item.key]===item.storedLang&&translated&&translated.trim())S.t[item.key+'_'+target]=translated.trim();
+                }
+                document.title='TRINETRA';save();return true;
+            }catch(error){
+                document.title='TRINETRA';
+                alert('A supported on-device Hindi ↔ English translator could not start. Keep this page open and online while the browser downloads its language model, then click ENG or हिंदी again. Your input text was not sent to an external translation service.');
+                return false;
+            }
+        }
+        function scheduleTypedTranslation(key,value){
+            clearTimeout(translationTimers.get(key));
+            const target=S.previewLang||S.lang;
+            const source=typedLanguage(value,S.lang);
+            if(source===target||!translatorCache.has(source+'-'+target))return;
+            translationTimers.set(key,setTimeout(async()=>{
+                await translateTypedFields(target);
+                if((S.previewLang||S.lang)===target){render();later()}
+            },700));
+        }
+        window.addEventListener('afterprint', render);
+        /* ---------- events ---------- */
+        const F_ = $('#form');
+        const mobileTouchPickerMode = matchMedia('(pointer: coarse)').matches || Number(navigator.maxTouchPoints||0)>0;
+        function isPickerEnter(event){return event.key==='Enter'||event.key==='NumpadEnter'||event.keyCode===13||event.which===13}
+        function bindMobileEnterSelection(input,content,commit){
+            if(!mobileTouchPickerMode||!input||input.dataset.mobileEnterBound==='1')return;
+            input.dataset.mobileEnterBound='1';input.setAttribute('enterkeyhint','go');input.setAttribute('autocomplete','off');input.setAttribute('autocapitalize','off');
+            const parent=input.parentNode;let form=input.closest('form');
+            if(!form){form=document.createElement('form');form.className='picker-keyboard-form';form.autocomplete='off';form.noValidate=true;parent.insertBefore(form,input);form.append(input);if(content&&content.parentNode===parent)form.append(content);const submit=document.createElement('button');submit.type='submit';submit.className='picker-keyboard-submit';submit.tabIndex=-1;submit.setAttribute('aria-hidden','true');submit.textContent='Select highlighted option';form.append(submit)}
+            let lastCommit=0;
+            const run=event=>{if(!isPickerEnter(event)||event.isComposing||event.keyCode===229)return;event.preventDefault();const now=Date.now();if(now-lastCommit<350)return;lastCommit=now;commit(event)};
+            input.addEventListener('keydown',run);input.addEventListener('keyup',run);
+            form.addEventListener('submit',event=>{event.preventDefault();const now=Date.now();if(now-lastCommit<350)return;lastCommit=now;commit(event)});
+        }
+        F_.addEventListener('click',event=>{
+            const button=event.target.closest('[data-chart-generate]');
+            if(!button||window.TrinetraChartFeatureReady)return;
+            const status=button.closest('.chart-engine-actions')?.querySelector('.chart-engine-status');
+            if(status){status.textContent='Chart engine did not load. Keep the engine folder beside index.html and open the full app over HTTPS or localhost.';status.classList.add('is-error')}
+        });
+        F_.addEventListener('keydown',e=>{
+            const input=e.target.closest('[data-naam-japa-field]');if(!input)return;
+            if(e.key==='Escape'){closeNaamJapaMenus();return}
+            if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+                e.preventDefault();let menu=input.closest('.naam-japa-field-wrap').querySelector('.naam-japa-menu');if(menu.hidden)openNaamJapaMenu(input);
+                menu=input.closest('.naam-japa-field-wrap').querySelector('.naam-japa-menu');const options=[...menu.querySelectorAll('[data-naam-japa-option]')];if(!options.length)return;
+                const current=options.indexOf(menu.querySelector('[data-naam-japa-option].active')),next=current<0?(e.key==='ArrowDown'?0:options.length-1):(current+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;
+                options.forEach((option,index)=>option.classList.toggle('active',index===next));options[next].scrollIntoView({block:'nearest'});return;
+            }
+            if(!mobileTouchPickerMode&&e.key==='Enter'){
+                e.preventDefault();const row=S.zeroNaamJapa.entries.find(item=>String(item.id)===input.dataset.naamJapaRow);if(!row)return;
+                const menu=input.closest('.naam-japa-field-wrap').querySelector('.naam-japa-menu');if(menu.hidden)openNaamJapaMenu(input);
+                const active=menu.querySelector('[data-naam-japa-option].active');
+                if(active){chooseNaamJapaOption(input,active);if(input.dataset.naamJapaField==='mantra')commitNaamJapa(row.id)}
+                else if(input.value.trim()&&input.dataset.naamJapaField==='mantra')commitNaamJapa(row.id);
+            }
+        });
+        function closeSearchMenus(except=null){
+            F_.querySelectorAll('.search-select-menu').forEach(menu=>{const wrap=menu.closest('.search-select');if(wrap!==except){menu.hidden=true;wrap.querySelector('[data-search-trigger]')?.setAttribute('aria-expanded','false')}});
+        }
+        function activateSearchOption(wrap,option){
+            wrap.querySelectorAll('[data-search-option]').forEach(item=>item.classList.toggle('active',item===option));
+            if(option)option.scrollIntoView({block:'nearest'});
+        }
+        function resizeSearchMenu(wrap){
+            const menu=wrap.querySelector('.search-select-menu'), options=[...wrap.querySelectorAll('[data-search-option]')].filter(option=>!option.hidden);
+            menu.style.height=Math.min(250,54+options.length*36)+'px';
+            const current=wrap.querySelector('[data-search-option].active:not([hidden])');
+            if(!current)activateSearchOption(wrap,options.find(option=>option.classList.contains('selected'))||options[0]||null);
+        }
+        F_.addEventListener('click',e=>{
+            const trigger=e.target.closest('[data-search-trigger]');
+            if(trigger){
+                const wrap=trigger.closest('.search-select'),menu=wrap.querySelector('.search-select-menu');
+                if(!menu.hidden){closeSearchMenus();return}
+                closeSearchMenus(wrap);menu.hidden=false;trigger.setAttribute('aria-expanded','true');
+                const query=wrap.querySelector('[data-search-query]'),optionList=wrap.querySelector('.search-select-options');
+                bindMobileEnterSelection(query,optionList,()=>{const options=[...wrap.querySelectorAll('[data-search-option]:not([hidden])')],q=query.value.trim().toLocaleLowerCase();const choice=wrap.querySelector('[data-search-option].active:not([hidden])')||options.find(option=>option.textContent.trim().toLocaleLowerCase()===q)||options.find(option=>option.textContent.trim().toLocaleLowerCase().startsWith(q))||(options.length===1?options[0]:null);choice?.click()});
+                query.value='';wrap.querySelectorAll('[data-search-option]').forEach(option=>option.hidden=false);wrap.querySelectorAll('[data-search-option]').forEach(option=>option.classList.remove('active'));resizeSearchMenu(wrap);query.focus();return;
+            }
+            const option=e.target.closest('[data-search-option]');
+            if(option){
+                const wrap=option.closest('.search-select'),hidden=wrap.querySelector('input[type=hidden]');
+                hidden.value=option.dataset.value;wrap.querySelector('[data-search-label]').textContent=option.textContent.trim();
+                wrap.querySelector('[data-search-trigger]').classList.add('has-value');
+                wrap.querySelectorAll('[data-search-option]').forEach(item=>item.classList.toggle('selected',item===option));
+                closeSearchMenus();hidden.dispatchEvent(new Event('change',{bubbles:true}));return;
+            }
+        });
+        F_.addEventListener('click',e=>{
+            const option=e.target.closest('[data-naam-japa-option]');
+            if(option){const input=option.closest('.naam-japa-field-wrap')?.querySelector('[data-naam-japa-field]');if(input){const rowId=input.dataset.naamJapaRow,field=input.dataset.naamJapaField;chooseNaamJapaOption(input,option);if(field==='mantra')commitNaamJapa(rowId)}e.preventDefault();return}
+            const clear=e.target.closest('[data-clear-naam-japa-suggestions]');if(clear){try{localStorage.removeItem(NAAM_JAPA_SUGGESTIONS_KEY)}catch(error){}closeNaamJapaMenus();updateNaamJapaClearButton();const status=$('#naamJapaStatus');if(status)status.textContent='Saved suggestions cleared on this device. Your current rows are unchanged.';return}
+            const action=e.target.closest('[data-naam-japa-action]');if(!action)return;
+            const rowId=action.dataset.naamJapaRow;
+            if(action.dataset.naamJapaAction==='add'){
+                const id=S.zeroNaamJapa.nextId++;S.zeroNaamJapa.entries.push({id,name:'',mantra:'',committed:false,controls:true,lines:{hi:'',en:''},translations:{}});renderNaamJapaBuilder(id,'name');later();return;
+            }
+            const entry=S.zeroNaamJapa.entries.find(item=>String(item.id)===String(rowId));if(entry){entry.committed=false;syncNaamJapaLines();S.zeroNaamJapa.entries=S.zeroNaamJapa.entries.filter(item=>item!==entry);renderNaamJapaBuilder();const textarea=$('#ta_zero');if(textarea){textarea.value=editorText('zero');fitTextarea(textarea)}const last=S.zeroNaamJapa.entries.at(-1);if(last)renderNaamJapaBuilder(last.id,'name');render();later()}
+        });
+        F_.addEventListener('focusin',e=>{
+            if(e.target.closest('.naam-japa-menu'))return;
+            const input=e.target.closest('[data-naam-japa-field]');if(!input){closeNaamJapaMenus();return}
+            closeNaamJapaMenus(input.closest('.naam-japa-field-wrap').querySelector('.naam-japa-menu'));openNaamJapaMenu(input);
+        });
+        document.addEventListener('click',e=>{if(!e.target.closest('.naam-japa-field-wrap'))closeNaamJapaMenus()});
+        F_.addEventListener('input',e=>{
+            if(!e.target.matches('[data-search-query]'))return;
+            const wrap=e.target.closest('.search-select'),query=e.target.value.trim().toLocaleLowerCase();
+            wrap.querySelectorAll('[data-search-option]').forEach(option=>{option.hidden=!option.textContent.trim().toLocaleLowerCase().includes(query);option.classList.remove('active')});
+            const visible=[...wrap.querySelectorAll('[data-search-option]:not([hidden])')];
+            const match=visible.find(option=>option.textContent.trim().toLocaleLowerCase()===query)||visible.find(option=>option.textContent.trim().toLocaleLowerCase().startsWith(query))||visible[0];
+            activateSearchOption(wrap,match||null);resizeSearchMenu(wrap);
+        });
+        F_.addEventListener('keydown',e=>{
+            if(!e.target.matches('[data-search-query]'))return;
+            const wrap=e.target.closest('.search-select'),options=[...wrap.querySelectorAll('[data-search-option]:not([hidden])')];
+            if(e.key==='Escape'){e.preventDefault();closeSearchMenus();wrap.querySelector('[data-search-trigger]')?.focus();return}
+            if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+                if(!options.length)return;
+                e.preventDefault();const current=options.indexOf(wrap.querySelector('[data-search-option].active:not([hidden])'));
+                const next=current<0?(e.key==='ArrowDown'?0:options.length-1):(current+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;
+                activateSearchOption(wrap,options[next]);return;
+            }
+            if(!mobileTouchPickerMode&&e.key==='Enter'){
+                e.preventDefault();const q=e.target.value.trim().toLocaleLowerCase();if(!options.length)return;
+                const choice=wrap.querySelector('[data-search-option].active:not([hidden])')||options.find(option=>option.textContent.trim().toLocaleLowerCase()===q)||options.find(option=>option.textContent.trim().toLocaleLowerCase().startsWith(q))||(options.length===1?options[0]:null);
+                choice?.click();
+            }
+        });
+        document.addEventListener('click',e=>{if(!e.target.closest('.search-select'))closeSearchMenus()});
+        document.addEventListener('focusin',e=>{if(!e.target.closest('.search-select'))closeSearchMenus()});
+        function rememberTypedField(input){
+            const key=input?.dataset?.k;
+            if(key===undefined)return;
+            const value=input.value, inputLang=typedLanguage(value,S.lang);
+            S.t[key+'_'+inputLang]=value;
+            S.manual[inputLang][key]=true;
+            delete S.manual[oth(inputLang)][key];
+            S.fieldSource[key]=inputLang;
+            if(isAllCapsLatin(value))S.uppercaseFields[key]=true;else delete S.uppercaseFields[key];
+            scheduleTypedTranslation(key,value);
+        }
+        F_.addEventListener('input', e => {
+            const d = e.target.dataset;
+            if (d.naamJapaField) {
+                const entry=S.zeroNaamJapa.entries.find(item=>String(item.id)===d.naamJapaRow);if(!entry)return;
+                if(d.naamJapaField==='name'&&String(e.target.value)!==String(entry.name||'')){entry.mantra='';entry.committed=false;const mantraInput=e.target.closest('.naam-japa-row').querySelector('[data-naam-japa-field="mantra"]');mantraInput.value=''}
+                entry[d.naamJapaField]=e.target.value;entry.committed=false;
+                syncNaamJapaLines();
+                const textarea=$('#ta_zero');if(textarea){textarea.value=editorText('zero');fitTextarea(textarea)}
+                const status=$('#naamJapaStatus');if(status)status.textContent='A single match is highlighted. Press ↑ to use your typed text.';
+                openNaamJapaMenu(e.target);
+                render();later();return;
+            }
+            if (d.k !== undefined) { rememberTypedField(e.target); if(e.target.matches('textarea'))fitTextarea(e.target); }
+            else if (d.g !== undefined) { S.g[d.g] = (d.g === 'dob' || d.g === 'date') ? (normalizeDate(e.target.value) || e.target.value) : e.target.value; if (d.g === 'dob' && e.target.value) { S.g.vy = baseYear(); $('#g_vy').value = S.g.vy } }
+            else return; render(); later()
+        });
+        F_.addEventListener('change', e => {
+            const d = e.target.dataset, v = e.target.value;
+            if(d.naamJapaHindi!==undefined){
+                const entry=S.zeroNaamJapa.entries.find(item=>String(item.id)===d.naamJapaRow);if(!entry)return;
+                entry.translateHindi=e.target.checked;syncNaamJapaLines();const textarea=$('#ta_zero');if(textarea){textarea.value=editorText('zero');fitTextarea(textarea)}render();later();
+                if(entry.translateHindi&&(S.previewLang||S.lang)==='hi'&&entry.committed)translateNaamJapaEntries('hi').then(()=>{syncNaamJapaLines();render();later()});
+                return;
+            }
+            if (d.hindiTranslation) {
+                const key=d.hindiTranslation;
+                S.hindiTranslation[key]=e.target.checked;
+                render();later();
+                if(e.target.checked&&(S.previewLang||S.lang)==='hi'){
+                    const run=++translationRun;
+                    translateTypedFields('hi').then(()=>{if(run===translationRun){render();later()}});
+                }
+                return;
+            }
+            if (d.g !== undefined) { S.g[d.g] = v }
+            else if (d.o) { S.o[d.o] = v; gen(d.o) }
+            else if (d.r) { (S.r[d.r] = S.r[d.r] || {})[d.f] = v; gen(d.r) }
+            else if (d.rx) { const key='rx_'+d.rx,inputLang=typedLanguage(v,S.lang); S.t[key+'_'+inputLang]=v; S.manual[inputLang][key]=true; delete S.manual[oth(inputLang)][key]; S.fieldSource[key]=inputLang; if(isAllCapsLatin(v))S.uppercaseFields[key]=true;else delete S.uppercaseFields[key]; scheduleTypedTranslation(key,v); gen(d.rx) }
+            else if (d.c) { S.charts.find(c => c.id == d.c)[d.f] = v }
+            else if (d.cf && e.target.files[0]) { const r = new FileReader(), c = S.charts.find(c => c.id == d.cf); r.onload = () => { c.img = r.result; const th = $('#th_' + c.id); th.src = r.result; th.hidden = false; render(); later() }; r.readAsDataURL(e.target.files[0]); return }
+            else return; render(); later()
+        });
+        let translationRun=0;
+        document.addEventListener('click', e => {
+            const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
+            if (d.tool) { const el = b.parentElement.previousElementSibling; d.tool === 'mic' ? voice(el, b) : formal(el, b) }
+            else if (d.act === 'formalall') { formalAll(b) }
+            else if (d.lib) {
+                const group=d.lib,index=+d.i,key=group==='z'?'zero':'dont';
+                const it=LIB[group][index].split('|');
+                const selected=S.libSelected[group][index]=!S.libSelected[group][index];
+                ['hi','en'].forEach((lang,i)=>{
+                    const lines=String(S.t[key+'_'+lang]||'').split(/\r?\n/),line=it[i],existing=lines.indexOf(line);
+                    if(selected){if(existing<0){if(lines.length===1&&!lines[0])lines[0]=line;else lines.push(line)}}
+                    else if(existing>=0)lines.splice(existing,1);
+                    S.t[key+'_'+lang]=lines.join('\n').replace(/^\n+|\n+$/g,'');
+                });
+                b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));
+                b.textContent=(selected?'✓ ':'＋ ')+it[1];
+                const textarea=$('#ta_'+key);textarea.value=editorText(key);fitTextarea(textarea);render();later();
+            }
+            else if (d.act === 'add') { S.charts.push({ id: ++S.uid, type: 'D1', mode: 'auto' }); buildForm(); render(); later() }
+            else if (d.act === 'del') { S.charts = S.charts.filter(c => c.id != d.id); buildForm(); render(); later() }
+            else if (d.act === 'print') {
+                const m=d.m,originalTitle=document.title;
+                (async()=>{
+                    if(m==='both'){await translateNaamJapaEntries('hi');await translateNaamJapaEntries('en')}
+                    else await translateNaamJapaEntries(m);
+                    $('#report').innerHTML=m==='both'?reportHTML('hi')+reportHTML('en'):reportHTML(m);
+                    document.title='Trinetra-Report-'+(TF('nm')||'Client').replace(/\s+/g,'_')+'-'+m;window.print();document.title=originalTitle;
+                })();
+            }
+            else if (d.act === 'save') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S)], { type: 'application/json' })); a.download = 'Trinetra-' + (TF('nm') || 'client').replace(/\s+/g, '_') + '.json'; a.click() }
+            else if (d.act === 'open') $('#openf').click();
+            else if (d.act === 'new') { if (confirm('Start a new report? Current data will be cleared. Save your file first if needed.')) { localStorage.removeItem('tri3'); location.reload() } }
+            else if (b.id === 'bhi' || b.id === 'ben') { const target=b.id==='bhi'?'hi':'en',run=++translationRun; S.previewLang=target; render(); translateTypedFields(target).then(()=>{if(run===translationRun){render();later()}}) }
+        });
+        $('#openf').addEventListener('change', e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { Object.assign(S, JSON.parse(r.result)); S.lang='en'; buildForm(); render(); save() } catch (x) { alert('This file is not a valid report.') } }; r.readAsText(f) });
+        /* ---------- voice & formal ---------- */
+        const ev = el => el.dispatchEvent(new Event(el.dataset.rx ? 'change' : 'input', { bubbles: true }));
+        let rec = null;
+        function voice(el, b) {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { alert('Voice input is unavailable in this browser. Use Chrome on a secure site.'); return }
+            if (rec) { rec.stop(); return }
+            const r = new SR(); rec = r; r.lang = S.lang === 'hi' ? 'hi-IN' : 'en-IN'; r.continuous = true; r.interimResults = false;
+            b.textContent = '⏹'; b.classList.add('on');
+            r.onresult = e => {
+                let t = ''; for (let i = e.resultIndex; i < e.results.length; i++)if (e.results[i].isFinal) t += e.results[i][0].transcript + ' ';
+                if (t) { el.value = (el.value ? el.value.trim() + ' ' : '') + t.trim(); ev(el) }
+            };
+            r.onerror = () => { };
+            r.onend = () => { rec = null; b.textContent = '🎤'; b.classList.remove('on'); if ($('#autof').checked && el.value.trim()) formal(el) };
+            r.start()
+        }
+        async function formal(el, b) {
+            const key = localStorage.getItem('tri_key'), txt = el.value.trim();
+            if (!txt) return;
+            if (!key) { alert('Add your API key in Voice & Formal Settings first.'); return }
+            const old = b ? b.textContent : ''; if (b) b.textContent = '…'; el.disabled = true;
+            const hi = S.lang === 'hi';
+            const sys = (hi ? 'Rewrite the user\'s text in formal, simple, easily understandable Hindi (Devanagari script).' : 'Rewrite the user\'s text in formal, simple, easily understandable English.') + ' The input may be Hindi, English or Hinglish. Keep the meaning, names, numbers and astrology terms (planets, houses, signs) unchanged. Use a polite, respectful tone addressing the client directly. Keep the same line breaks and list structure. Return ONLY the rewritten text, nothing else.';
+            try {
+                const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }, body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1500, system: sys, messages: [{ role: 'user', content: txt }] }) });
+                const j = await r.json(), out = j.content && j.content[0] && j.content[0].text;
+                if (!out) throw new Error((j.error && j.error.message) || 'कोई जवाब नहीं आया');
+                el.value = out.trim(); ev(el)
+            }
+            catch (x) { alert('Could not rewrite the text: ' + x.message) }
+            finally { el.disabled = false; if (b) b.textContent = old }
+        }
+        async function formalAll(b) {
+            const old = b.textContent; b.disabled = true;
+            const els = [...document.querySelectorAll('#form textarea')].filter(e => e.value.trim());
+            for (let i = 0; i < els.length; i++) { b.textContent = '✨ ' + (i + 1) + '/' + els.length; await formal(els[i]) }
+            b.textContent = old; b.disabled = false
+        }
+        $('#apikey').value = localStorage.getItem('tri_key') || '';
+        $('#apikey').addEventListener('change', e => localStorage.setItem('tri_key', e.target.value.trim()));
+        $('#autof').checked = localStorage.getItem('tri_autof') === '1';
+        $('#autof').addEventListener('change', e => localStorage.setItem('tri_autof', e.target.checked ? '1' : '0'));
+
+
+        function normalizeDate(v){
+            const s=String(v||'').trim();let y,m,d,match;
+            if((match=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))){[,y,m,d]=match}
+            else if((match=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))){d=match[1];m=match[2];y=match[3]}
+            else if((match=s.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/))){d=match[1];m=ME.findIndex(x=>x.toLowerCase().startsWith(match[2].toLowerCase()))+1;y=match[3]}
+            else return '';y=+y;m=+m;d=+d;const dt=new Date(0);dt.setFullYear(y,m-1,d);dt.setHours(0,0,0,0);return dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d?`${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`:''
+        }
+        function bindPickerSearch(search,list,preferredChoice=null,afterFilter=null){
+          const all=()=>[...list.querySelectorAll('button')],visible=()=>all().filter(button=>!button.hidden);
+          const activate=button=>{all().forEach(option=>option.classList.toggle('active',option===button));if(button)button.scrollIntoView({block:'nearest'})};
+          search.oninput=()=>{
+            const q=search.value.trim().toLocaleLowerCase();
+            all().forEach(button=>{button.hidden=!button.textContent.trim().toLocaleLowerCase().includes(q);button.classList.remove('active')});
+            const options=visible(),match=preferredChoice?.(q,options)||options.find(button=>button.textContent.trim().toLocaleLowerCase()===q)||options.find(button=>button.textContent.trim().toLocaleLowerCase().startsWith(q))||options.find(button=>button.classList.contains('selected'))||options[0];
+            activate(match||null);afterFilter?.();
+          };
+          search.onkeydown=e=>{
+            const options=visible();
+            if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+              if(!options.length)return;e.preventDefault();const current=options.indexOf(list.querySelector('button.active:not([hidden])'));
+              const next=current<0?(e.key==='ArrowDown'?0:options.length-1):(current+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;activate(options[next]);return;
+            }
+            if(!mobileTouchPickerMode&&e.key==='Enter'){
+              e.preventDefault();const q=search.value.trim().toLocaleLowerCase();
+              const choice=list.querySelector('button.active:not([hidden])')||options.find(button=>button.textContent.trim().toLocaleLowerCase()===q)||options.find(button=>button.textContent.trim().toLocaleLowerCase().startsWith(q))||(options.length===1?options[0]:null);
+              choice?.click();
+            }
+          };
+          bindMobileEnterSelection(search,list,()=>{const options=visible(),q=search.value.trim().toLocaleLowerCase();const choice=list.querySelector('button.active:not([hidden])')||options.find(button=>button.textContent.trim().toLocaleLowerCase()===q)||options.find(button=>button.textContent.trim().toLocaleLowerCase().startsWith(q))||(options.length===1?options[0]:null);choice?.click()});
+        }
+        function initDateTimePickers(){
+          const allCalendarYears=Array.from({length:9999},(_,i)=>9999-i);
+          const makeCalendarDate=(year,month,day=1)=>{const date=new Date(0);date.setFullYear(year,month,day);date.setHours(0,0,0,0);return date};
+          document.querySelectorAll('.date-field').forEach(label=>{
+            if(label.dataset.pickerReady)return;label.dataset.pickerReady='1';
+            const input=label.querySelector('input'),panel=label.querySelector('.date-picker');
+            if(mobileTouchPickerMode){panel.classList.add('date-picker-mobile-inline')}
+            else{panel.classList.add('date-picker-portal');document.body.appendChild(panel)}
+            const months=ME;const parseParts=value=>{const z=String(value||'').trim().match(/^(DD|\d{1,2})\s+(MMM|[A-Za-z]{3,})\s+(YYYY|\d{4})$/i);if(!z)return null;const mi=z[2].toUpperCase()==='MMM'?-1:ME.findIndex(x=>x.toLowerCase().startsWith(z[2].toLowerCase()));return {day:z[1].toUpperCase()!=='DD'?+z[1]:null,month:mi>=0?mi:null,year:z[3].toUpperCase()!=='YYYY'?+z[3]:null}};
+            let partsSaved=parseParts(input.value),initial=normalizeDate(input.value),now=new Date(),active=initial?(()=>{const [y,m,d]=initial.split('-').map(Number);return makeCalendarDate(y,m-1,d)})():partsSaved?makeCalendarDate(partsSaved.year??now.getFullYear(),partsSaved.month??now.getMonth(),partsSaved.day||1):new Date();
+            let chosen={day:!!initial||!!partsSaved?.day,month:!!initial||partsSaved?.month!=null,year:!!initial||!!partsSaved?.year},internalUpdate=false;
+            function updateValue(closeOnComplete=!mobileTouchPickerMode){
+              const d=chosen.day?String(active.getDate()).padStart(2,'0'):'DD';
+              const m=chosen.month?months[active.getMonth()].slice(0,3):'MMM';
+              const y=chosen.year?String(active.getFullYear()).padStart(4,'0'):'YYYY';
+              input.value=`${d} ${m} ${y}`;
+              internalUpdate=true;input.dispatchEvent(new Event('input',{bubbles:true}));internalUpdate=false;
+              if(closeOnComplete&&chosen.day&&chosen.month&&chosen.year)panel.hidden=true;
+            }
+            function draw(){
+              const y=active.getFullYear(),m=active.getMonth(),first=makeCalendarDate(y,m,1).getDay(),days=makeCalendarDate(y,m+1,0).getDate();
+              const monthTitle=chosen.month?months[m]:'Month',yearTitle=chosen.year?String(y).padStart(4,'0'):'Year';
+              const selectedISO=chosen.day&&chosen.month&&chosen.year?normalizeDate(input.value):'';
+              panel.innerHTML=`<div class="date-head"><button type="button" data-prev>‹</button><button type="button" class="date-title" data-month-toggle>${monthTitle}⌄</button><button type="button" class="date-title" data-year-toggle>${yearTitle}⌃</button><button type="button" data-next>›</button></div><div class="date-list month-list" hidden><input placeholder="Month…" class="date-search"><div class="date-options">${months.map((x,i)=>`<button type="button" data-month="${i}" class="${chosen.month&&i===m?'selected':''}">${x}</button>`).join('')}</div></div><div class="date-list year-list" hidden><input inputmode="numeric" placeholder="Year…" class="date-search"><div class="date-options"></div></div><div class="calendar">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(x=>`<span>${x}</span>`).join('')}${Array.from({length:first},()=>'<i></i>').join('')}${Array.from({length:days},(_,i)=>{let day=i+1,key=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;return `<button type="button" data-day="${day}" class="${key===selectedISO?'selected':''}">${day}</button>`}).join('')}</div>`;
+              panel.querySelector('[data-prev]').onclick=()=>{const next=makeCalendarDate(y,m-1,1);if(next.getFullYear()<1)return;active=next;queueMicrotask(draw)};
+              panel.querySelector('[data-next]').onclick=()=>{const next=makeCalendarDate(y,m+1,1);if(next.getFullYear()>9999)return;active=next;queueMicrotask(draw)};
+              panel.querySelector('[data-month-toggle]').onclick=()=>{const list=panel.querySelector('.month-list');list.hidden=!list.hidden;panel.querySelector('.year-list').hidden=true;if(!list.hidden){const search=list.querySelector('.date-search');search.value='';search.dispatchEvent(new Event('input'));search.focus()}};
+              panel.querySelector('[data-year-toggle]').onclick=()=>{const list=panel.querySelector('.year-list');list.hidden=!list.hidden;panel.querySelector('.month-list').hidden=true;if(!list.hidden){const search=list.querySelector('.date-search');search.value='';search.dispatchEvent(new Event('input'));search.focus()}};
+              panel.querySelectorAll('[data-month]').forEach(b=>b.onclick=e=>{if(mobileTouchPickerMode){e.stopPropagation()}const nm=+b.dataset.month;if(nm!==active.getMonth())chosen.day=false;active=makeCalendarDate(y,nm,Math.min(active.getDate(),makeCalendarDate(y,nm+1,0).getDate()));chosen.month=true;updateValue(!mobileTouchPickerMode);if(mobileTouchPickerMode)panel.hidden=false;queueMicrotask(draw)});
+              const yearList=panel.querySelector('.year-list'),yearSearch=yearList.querySelector('.date-search'),yearOptions=yearList.querySelector('.date-options');
+              yearOptions.classList.add('year-virtual-options');
+              const yearRowHeight=36,yearWindowSize=16,yearLabel=value=>String(value).padStart(4,'0'),yearTrack=document.createElement('div');
+              yearTrack.className='year-virtual-track';yearOptions.replaceChildren(yearTrack);
+              let yearValues=allCalendarYears,activeYearIndex=Math.max(0,9999-y),yearRenderFrame=0,lastYearRowStart=-1;
+              function renderYearRows(force=false){
+                yearTrack.style.height=`${yearValues.length*yearRowHeight}px`;
+                if(!yearValues.length){yearTrack.replaceChildren();return}
+                const firstVisible=Math.floor(yearOptions.scrollTop/yearRowHeight),start=Math.max(0,Math.min(yearValues.length-yearWindowSize,firstVisible-3)),end=Math.min(yearValues.length,start+yearWindowSize);
+                if(!force&&start===lastYearRowStart)return;lastYearRowStart=start;
+                const fragment=document.createDocumentFragment();
+                for(let index=start;index<end;index++){
+                  const value=yearValues[index],option=document.createElement('button');option.type='button';option.dataset.year=String(value);option.textContent=yearLabel(value);option.className=`year-virtual-option${chosen.year&&value===y?' selected':''}${index===activeYearIndex?' active':''}`;option.style.top=`${index*yearRowHeight}px`;fragment.append(option);
+                }
+                yearTrack.replaceChildren(fragment);
+              }
+              function centerYearIndex(index){
+                if(index<0||index>=yearValues.length)return;
+                yearTrack.style.height=`${yearValues.length*yearRowHeight}px`;
+                const oldBehavior=yearOptions.style.scrollBehavior;yearOptions.style.scrollBehavior='auto';
+                yearOptions.scrollTop=Math.max(0,index*yearRowHeight-(yearOptions.clientHeight-yearRowHeight)/2);renderYearRows(true);
+                requestAnimationFrame(()=>{yearOptions.style.scrollBehavior=oldBehavior});
+              }
+              function refreshYearOptions(){
+                const query=yearSearch.value.trim();
+                if(!query)yearValues=allCalendarYears;
+                else{const prefixMatches=allCalendarYears.filter(value=>yearLabel(value).startsWith(query)||String(value).startsWith(query));yearValues=prefixMatches.length?prefixMatches:allCalendarYears.filter(value=>yearLabel(value).includes(query)||String(value).includes(query))}
+                if(!yearValues.length){activeYearIndex=-1;lastYearRowStart=-1;yearOptions.style.height='0px';yearTrack.style.height='0px';yearTrack.replaceChildren();return}
+                yearOptions.style.height=`${Math.min(205,Math.max(yearRowHeight,yearValues.length*yearRowHeight))}px`;
+                const exact=query?yearValues.findIndex(value=>yearLabel(value)===query||String(value)===query):-1,prefix=query?yearValues.findIndex(value=>yearLabel(value).startsWith(query)||String(value).startsWith(query)):-1,selected=yearValues.indexOf(y);
+                activeYearIndex=query?(exact>=0?exact:prefix>=0?prefix:0):(selected>=0?selected:0);centerYearIndex(activeYearIndex);
+              }
+              function chooseYear(value,event){
+                const ny=Number(value);if(!Number.isInteger(ny)||ny<1||ny>9999)return;
+                if(mobileTouchPickerMode)event?.stopPropagation();
+                if(ny!==active.getFullYear())chosen.day=false;
+                active=makeCalendarDate(ny,m,Math.min(active.getDate(),makeCalendarDate(ny,m+1,0).getDate()));chosen.year=true;
+                updateValue(!mobileTouchPickerMode);if(mobileTouchPickerMode)panel.hidden=false;queueMicrotask(draw);
+              }
+              yearOptions.addEventListener('click',event=>{const option=event.target.closest('[data-year]');if(option)chooseYear(option.dataset.year,event)});
+              yearOptions.addEventListener('scroll',()=>{if(yearRenderFrame)return;yearRenderFrame=requestAnimationFrame(()=>{yearRenderFrame=0;renderYearRows()})},{passive:true});
+              yearSearch.oninput=refreshYearOptions;
+              yearSearch.onkeydown=event=>{
+                if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+                  if(!yearValues.length)return;event.preventDefault();activeYearIndex=(activeYearIndex+(event.key==='ArrowDown'?1:-1)+yearValues.length)%yearValues.length;centerYearIndex(activeYearIndex);return;
+                }
+                if(!mobileTouchPickerMode&&event.key==='Enter'){event.preventDefault();if(activeYearIndex>=0)chooseYear(yearValues[activeYearIndex],event)}
+              };
+              bindMobileEnterSelection(yearSearch,yearOptions,()=>{if(activeYearIndex>=0)chooseYear(yearValues[activeYearIndex])});
+              const monthSearch=panel.querySelector('.month-list .date-search');bindPickerSearch(monthSearch,monthSearch.nextElementSibling);
+              panel.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{active=makeCalendarDate(y,m,+b.dataset.day);chosen.day=true;updateValue(true);queueMicrotask(draw)});
+            }
+            let positionFrame=0;
+            function scheduleDatePickerPosition(){
+              if(positionFrame)return;
+              positionFrame=requestAnimationFrame(()=>{positionFrame=0;positionDatePicker()});
+            }
+            function positionDatePicker(){
+              if(panel.hidden||mobileTouchPickerMode)return;
+              const field=input.getBoundingClientRect(),side=label.closest('aside')?.getBoundingClientRect(),vp=window.visualViewport;
+              const viewLeft=vp?.offsetLeft||0,viewTop=vp?.offsetTop||0,viewWidth=vp?.width||window.innerWidth,viewHeight=vp?.height||window.innerHeight;
+              const viewRight=viewLeft+viewWidth,viewBottom=viewTop+viewHeight;
+              const anchorOutside=field.bottom<=viewTop||field.top>=viewBottom||field.right<=viewLeft||field.left>=viewRight;
+              if(!mobileTouchPickerMode&&anchorOutside){panel.hidden=true;return}
+              const width=Math.max(0,Math.min(360,viewWidth-24,side?side.width-24:viewWidth-24));
+              panel.style.width=width+'px';
+              panel.style.boxSizing='border-box';panel.style.maxHeight='none';panel.style.height='auto';panel.style.overflow='visible';panel.style.overscrollBehavior='contain';panel.style.zIndex='1000';
+              panel.classList.remove('compact','micro');
+              let popupHeight=panel.getBoundingClientRect().height;
+              if(popupHeight>viewHeight-24){panel.classList.add('compact');popupHeight=panel.getBoundingClientRect().height;}
+              if(popupHeight>viewHeight-24){panel.classList.add('micro');popupHeight=panel.getBoundingClientRect().height;}
+              const safe=12,maxTop=Math.max(viewTop+safe,viewBottom-popupHeight-safe);
+              const top=Math.max(viewTop+safe,Math.min(viewTop+(viewHeight-popupHeight)/2,maxTop));
+              const listMax=Math.min(280,Math.max(90,viewHeight-110)),optionMax=Math.min(205,Math.max(36,listMax-66));
+              panel.querySelectorAll('.date-list').forEach(list=>{list.style.maxHeight=listMax+'px';const options=list.querySelector('.date-options');if(options)options.style.maxHeight=optionMax+'px'});
+              const minLeft=viewLeft+12,maxLeft=Math.max(minLeft,Math.min(viewRight-width-12,(side?.right??viewRight)-width-12));
+              const left=Math.max(minLeft,Math.min(field.left,maxLeft));
+              panel.style.left=left+'px';panel.style.top=top+'px';
+            }
+            function openDatePicker(){
+              if(mobileTouchPickerMode){if(!panel.hidden)return;draw();panel.hidden=false;panel.style.visibility='';return}
+              if(!panel.hidden){scheduleDatePickerPosition();return}
+              draw();panel.hidden=false;panel.style.visibility='hidden';
+              requestAnimationFrame(()=>{positionDatePicker();panel.style.visibility=''});
+            }
+            if(mobileTouchPickerMode){
+              input.addEventListener('focus',()=>{if(panel.hidden)openDatePicker()});
+              input.addEventListener('click',()=>{if(panel.hidden)openDatePicker()});
+              let cardScrollFrame=0;
+              const closeWhenClientCardLeavesView=()=>{
+                if(panel.hidden||cardScrollFrame)return;
+                cardScrollFrame=requestAnimationFrame(()=>{
+                  cardScrollFrame=0;if(panel.hidden)return;
+                  const card=label.closest('details.fs')||label.closest('aside');if(!card)return;
+                  const bounds=card.getBoundingClientRect(),viewport=window.visualViewport;
+                  const top=viewport?.offsetTop||0,bottom=top+(viewport?.height||window.innerHeight);
+                  if(bounds.bottom<=top||bounds.top>=bottom)panel.hidden=true;
+                });
+              };
+              document.addEventListener('scroll',closeWhenClientCardLeavesView,{capture:true,passive:true});
+            }else{
+              let pointerToggledPicker=false;
+              input.addEventListener('pointerdown',()=>{
+                pointerToggledPicker=true;
+                if(panel.hidden)openDatePicker();else panel.hidden=true;
+                setTimeout(()=>{pointerToggledPicker=false},0);
+              });
+              input.addEventListener('focus',()=>{if(!pointerToggledPicker&&panel.hidden)openDatePicker()});
+              input.addEventListener('click',e=>{if(e.detail!==0)return;if(panel.hidden)openDatePicker();else panel.hidden=true});
+              window.addEventListener('resize',scheduleDatePickerPosition,{passive:true});
+              document.addEventListener('scroll',scheduleDatePickerPosition,{capture:true,passive:true});
+              window.visualViewport?.addEventListener('resize',scheduleDatePickerPosition,{passive:true});
+              window.visualViewport?.addEventListener('scroll',scheduleDatePickerPosition,{passive:true});
+            }
+            input.addEventListener('input',()=>{const iso=normalizeDate(input.value);if(iso){const [y,m,d]=iso.split('-').map(Number);active=makeCalendarDate(y,m-1,d);chosen={day:true,month:true,year:true};if(!internalUpdate)panel.hidden=true}});
+            input.addEventListener('keydown',e=>{if(!mobileTouchPickerMode&&e.key==='Escape')panel.hidden=true});
+            const closeDatePickerOutside=e=>{
+              if(mobileTouchPickerMode){
+                const path=e.composedPath?.()||[];
+                const inside=label.contains(e.target)||panel.contains(e.target)||path.includes(label)||path.includes(panel);
+                if(inside)return;
+                const rect=panel.getBoundingClientRect();
+                if(e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom)return;
+                panel.hidden=true;return;
+              }
+              if(!label.contains(e.target)&&!panel.contains(e.target))panel.hidden=true;
+            };
+            document.addEventListener(mobileTouchPickerMode?'click':'pointerdown',closeDatePickerOutside);
+          });
+          document.querySelectorAll('.time-field').forEach(label=>{if(label.dataset.pickerReady)return;label.dataset.pickerReady='1';const input=label.querySelector('#g_tob'),picker=label.querySelector('.time-picker'),parts=label.querySelectorAll('.time-value');let hadTime=/^\d{2}:\d{2}$/.test(input.value),selectedHour=hadTime,selectedMinute=hadTime;let [h,m]=hadTime?input.value.split(':').map(Number):[0,0],ap=h>=12?'PM':'AM';h=h%12;function update(commit=true){parts[0].textContent=String(h||12).padStart(2,'0');parts[1].textContent=String(m).padStart(2,'0');label.querySelectorAll('.time-menu').forEach((menu,idx)=>menu.querySelectorAll('[data-val]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.val)===(idx===0?(h||12):m))));label.querySelectorAll('.ampm [data-val]').forEach(b=>b.classList.toggle('selected',b.dataset.val===ap));if(commit){input.value=`${String((h%12+(ap==='PM'?12:0))%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`;input.dispatchEvent(new Event('input',{bubbles:true}))}}function resizeMenu(menu){const visible=[...menu.querySelectorAll('.time-options button')].filter(b=>!b.hidden).length;menu.style.height=Math.min(210,60+visible*36)+'px'}function build(){label.querySelectorAll('.time-menu').forEach((menu,idx)=>{if(idx>1)return;const opts=menu.querySelector('.time-options'),n=idx===0?12:60;opts.innerHTML=Array.from({length:n},(_,i)=>{const v=idx===0?String(i+1).padStart(2,'0'):String(i).padStart(2,'0');return `<button type="button" data-val="${v}">${v}</button>`}).join('');opts.querySelectorAll('[data-val]').forEach(b=>b.onclick=()=>{if(idx===0){h=+b.dataset.val%12;selectedHour=true;update();menu.hidden=true;const next=label.querySelectorAll('.time-menu')[1],search=next.querySelector('.time-search');next.hidden=false;search.value='';search.dispatchEvent(new Event('input'));search.focus();(()=>{const opts=next.querySelector('.time-options'),sel=opts.querySelector('.selected');if(sel)opts.scrollTop=Math.max(0,sel.offsetTop-opts.offsetTop-sel.offsetHeight*2)})()}else{m=+b.dataset.val;selectedMinute=true;update();menu.hidden=true;label.querySelector(`.ampm [data-val="${ap}"]`).focus()}});bindPickerSearch(menu.querySelector('.time-search'),opts,(q,options)=>/^\d{1,2}$/.test(q)?options.find(button=>Number(button.textContent.trim())===Number(q)):null,()=>resizeMenu(menu))})}build();update(false);input.addEventListener('click',()=>{picker.hidden=!picker.hidden});parts.forEach(b=>b.onclick=()=>{const menu=b.parentElement.querySelector('.time-menu');label.querySelectorAll('.time-menu').forEach(x=>x.hidden=true);menu.hidden=false;const search=menu.querySelector('input');if(search){search.value='';search.dispatchEvent(new Event('input'));search.focus();(()=>{const opts=menu.querySelector('.time-options'),sel=opts.querySelector('.selected');if(sel)opts.scrollTop=Math.max(0,sel.offsetTop-opts.offsetTop-sel.offsetHeight*2)})()}});label.querySelectorAll('.ampm [data-val]').forEach(b=>{b.onclick=()=>{ap=b.dataset.val;update();if(!mobileTouchPickerMode||(selectedHour&&selectedMinute)){label.querySelectorAll('.time-menu').forEach(x=>x.hidden=true);requestAnimationFrame(()=>{picker.hidden=true;picker.setAttribute('hidden','')})}};b.onkeydown=e=>{if(e.key==='Enter'){if(selectedHour&&selectedMinute){e.preventDefault();update();picker.hidden=true;label.querySelectorAll('.time-menu').forEach(x=>x.hidden=true)}return}if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();ap=e.key==='ArrowRight'?'PM':'AM';update();label.querySelector(`.ampm [data-val="${ap}"]`).focus()}});document.addEventListener('click',e=>{if(!label.contains(e.target)){picker.hidden=true;label.querySelectorAll('.time-menu').forEach(x=>x.hidden=true)}});document.addEventListener('focusin',e=>{if(!label.contains(e.target)){picker.hidden=true;label.querySelectorAll('.time-menu').forEach(x=>x.hidden=true)}})});
+        }
+
+        const PHOTON_GEOCODER = 'https://photon.komoot.io/api/';
+        const PLACE_HISTORY_KEY='tri_birthplace_suggestions_v1';
+        let placeTimer, placeController, placeEnterAt=0;
+        const placeKey=value=>String(value||'').trim().toLocaleLowerCase();
+        function readBirthPlaceHistory(){try{const value=JSON.parse(localStorage.getItem(PLACE_HISTORY_KEY)||'[]');return Array.isArray(value)?value.filter(item=>item&&typeof item.place==='string'&&item.place.trim()):[]}catch(error){return[]}}
+        function rememberBirthPlace(place,coordinates=null){
+            place=String(place||'').trim();if(!place)return;
+            const key=placeKey(place),history=readBirthPlaceHistory(),previous=history.find(item=>placeKey(item.place)===key);
+            const candidate=coordinates||previous||{},hasCoordinateValues=candidate.latitude!==''&&candidate.latitude!=null&&candidate.longitude!==''&&candidate.longitude!=null,latitude=hasCoordinateValues?Number(candidate.latitude):NaN,longitude=hasCoordinateValues?Number(candidate.longitude):NaN,hasCoordinates=Number.isFinite(latitude)&&latitude>=-90&&latitude<=90&&Number.isFinite(longitude)&&longitude>=-180&&longitude<=180;
+            const timeZone=hasCoordinates?(candidate.timeZone||window.tzlookup?.(latitude,longitude)||''):'';
+            const saved={place,latitude:hasCoordinates?latitude:'',longitude:hasCoordinates?longitude:'',timeZone,source:hasCoordinates?'mapped':'typed'};
+            const next=[saved,...history.filter(item=>placeKey(item.place)!==key)].slice(0,30);
+            try{localStorage.setItem(PLACE_HISTORY_KEY,JSON.stringify(next))}catch(error){}
+        }
+        function placeOptionMarkup(place,{latitude='',longitude='',active=false,kind='saved'}={}){
+            const hasCoordinates=latitude!==''&&latitude!=null&&longitude!==''&&longitude!=null;
+            const coords=hasCoordinates?` data-lat="${esc(latitude)}" data-lon="${esc(longitude)}"`:'';
+            return `<button type="button" class="place-option${active?' active':''}" aria-selected="${active?'true':'false'}" data-place="${esc(place)}" data-place-kind="${kind}"${coords}>${esc(place)}</button>`;
+        }
+        function showPlaceOptions(query,features=[],message=''){
+            const box=$('#placeSuggestions'),q=String(query||'').trim(),seen=new Set(),options=[];
+            const add=(place,coords={},kind='saved')=>{const key=placeKey(place);if(!key||seen.has(key))return;seen.add(key);options.push(placeOptionMarkup(place,{...coords,active:options.length===0,kind}))};
+            features.forEach(feature=>{
+                const props=feature.properties||{},coords=feature.geometry?.coordinates||[];
+                const first=props.name||props.city||props.locality||props.county;
+                const street=[props.housenumber,props.street].filter(Boolean).join(' ');
+                const parts=[first,street,props.postcode,props.district||props.county,props.city,props.state,props.country].filter((part,index,all)=>part&&all.indexOf(part)===index);
+                if(parts.length)add(parts.join(', '),{latitude:coords[1],longitude:coords[0]},'map');
+            });
+            readBirthPlaceHistory().filter(item=>placeKey(item.place).includes(placeKey(q))).forEach(item=>add(item.place,{latitude:item.latitude,longitude:item.longitude},'saved'));
+            const active=options.length===0;
+            options.push(placeOptionMarkup(q,{active,kind:'typed'}).replace('data-place-kind="typed"','data-place-kind="typed" data-place-manual="1"'));
+            const attribution=features.length?'<div class="place-attribution">Search by Photon · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></div>':'';
+            const status=message?`<div class="place-message">${esc(message)}</div>`:'';
+            box.innerHTML=options.join('')+attribution+status;box.hidden=false;
+        }
+        function commitTypedBirthPlace(input){
+            const place=input.value.trim();if(!place)return;
+            clearTimeout(placeTimer);placeController?.abort();
+            const saved=S.g.birthPlaceCoordinates||{},coords=placeKey(saved.place)===placeKey(place)?saved:null;
+            if(!coords){delete S.g.birthPlaceCoordinates;delete S.g.birthPlaceCoordinateDraft}
+            input.value=place;$('#placeSuggestions').hidden=true;rememberBirthPlace(place,coords);rememberTypedField(input);render();later();
+        }
+        F_.addEventListener('input', e => {
+            if(e.target.id!=='placeInput')return;
+            clearTimeout(placeTimer);placeController?.abort();
+            const q=e.target.value.trim(),box=$('#placeSuggestions');
+            if(!q){box.hidden=true;return}
+            showPlaceOptions(q,[],q.length<2?'Type a place or choose “Use as typed”.':'Searching locations…');
+            if(q.length<2)return;
+            placeTimer=setTimeout(async()=>{
+                placeController=new AbortController();
+                try{
+                    const url=`${PHOTON_GEOCODER}?q=${encodeURIComponent(q)}&limit=6&lang=en`,response=await fetch(url,{signal:placeController.signal});
+                    if(!response.ok)throw new Error(`Photon returned ${response.status}`);
+                    const data=await response.json(),features=data.features||[];
+                    showPlaceOptions(q,features,features.length?'':'No map match. You can still use the place as typed.');
+                }catch(error){
+                    if(error.name==='AbortError')return;
+                    showPlaceOptions(q,[], 'Suggestions unavailable. You can still use the place as typed.');
+                }
+            },320);
+        });
+        F_.addEventListener('keydown',event=>{
+            const input=event.target;if(input.id!=='placeInput')return;
+            const box=$('#placeSuggestions'),options=[...box.querySelectorAll('[data-place]')];
+            if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+                if(box.hidden||!options.length)return;event.preventDefault();
+                let index=options.findIndex(option=>option.classList.contains('active'));
+                index=index<0?(event.key==='ArrowDown'?0:options.length-1):(index+(event.key==='ArrowDown'?1:-1)+options.length)%options.length;
+                options.forEach((option,i)=>{option.classList.toggle('active',i===index);option.setAttribute('aria-selected',String(i===index))});options[index].scrollIntoView({block:'nearest'});return;
+            }
+            if(isPickerEnter(event)){
+                if(event.isComposing||event.keyCode===229)return;event.preventDefault();
+                const now=Date.now();if(now-placeEnterAt<350)return;placeEnterAt=now;
+                const active=options.find(option=>option.classList.contains('active'));
+                if(active)active.click();else commitTypedBirthPlace(input);
+            }
+        });
+        F_.addEventListener('keyup',event=>{
+            if(event.target.id!=='placeInput'||!isPickerEnter(event)||event.isComposing||event.keyCode===229)return;
+            event.preventDefault();const now=Date.now();if(now-placeEnterAt<350)return;placeEnterAt=now;
+            const box=$('#placeSuggestions'),active=box.querySelector('[data-place].active');if(active)active.click();else commitTypedBirthPlace(event.target);
+        });
+        F_.addEventListener('focusout',event=>{
+            if(event.target.id!=='placeInput')return;
+            const input=event.target;
+            setTimeout(()=>{
+                const box=$('#placeSuggestions');if(box?.contains(document.activeElement))return;
+                clearTimeout(placeTimer);placeController?.abort();if(box)box.hidden=true;
+                const place=input.value.trim();if(!place)return;
+                const saved=S.g.birthPlaceCoordinates||{},coords=placeKey(saved.place)===placeKey(place)?saved:null;
+                rememberBirthPlace(place,coords);if(box)box.hidden=true;
+            },80);
+        });
+        F_.addEventListener('click',event=>{
+            const button=event.target.closest('[data-place]');if(!button)return;
+            const input=$('#placeInput'),place=button.dataset.place,latitude=button.dataset.lat==null?NaN:Number(button.dataset.lat),longitude=button.dataset.lon==null?NaN:Number(button.dataset.lon);
+            clearTimeout(placeTimer);placeController?.abort();input.value=place;$('#placeSuggestions').hidden=true;
+            const timeZone=Number.isFinite(latitude)&&Number.isFinite(longitude)?window.tzlookup?.(latitude,longitude):null;
+            let coordinates=null;
+            if(Number.isFinite(latitude)&&Number.isFinite(longitude)&&timeZone){coordinates={place,label:place,latitude,longitude,timeZone};S.g.birthPlaceCoordinates=coordinates;S.g.birthPlaceCoordinateDraft={place,latitude:String(latitude),longitude:String(longitude)}}
+            else{delete S.g.birthPlaceCoordinates;delete S.g.birthPlaceCoordinateDraft}
+            rememberBirthPlace(place,coordinates);rememberTypedField(input);render();later();
+        });
+        document.addEventListener('click',event=>{if(!event.target.closest('.place-field')){const box=$('#placeSuggestions');if(box)box.hidden=true}});
+        document.addEventListener('focusin',event=>{if(!event.target.closest('.place-field')){const box=$('#placeSuggestions');if(box)box.hidden=true}});
+        /* TEMPORARY PREMIUM HEADER AUTO-HIDE — remove this block to revert. */
+        (() => {
+            const panel = document.querySelector('aside');
+            const header = panel?.querySelector('.temp-header');
+            if (!panel || !header) return;
+            const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+            const coarseTouch = matchMedia('(hover: none) and (pointer: coarse)');
+            let lastInputWasTouch = false;
+            let revealTimer = 0;
+            const readScrollPosition = () => panel.scrollHeight > panel.clientHeight + 1 ? panel.scrollTop : window.scrollY;
+            let lastScrollPosition = readScrollPosition();
+            let lastScrollAt = performance.now();
+            const clearTouchReveal = () => {
+                window.clearTimeout(revealTimer);
+                revealTimer = 0;
+                panel.classList.remove('temp-header-revealed');
+            };
+            const isTouchInteraction = () => coarseTouch.matches || lastInputWasTouch;
+            const updateHeaderVisibility = () => {
+                if (getComputedStyle(panel).display === 'none') {
+                    clearTouchReveal();
+                    panel.classList.remove('temp-header-hidden');
+                    lastScrollPosition = readScrollPosition();
+                    lastScrollAt = performance.now();
+                    return;
+                }
+                const now = performance.now();
+                const scrollPosition = readScrollPosition();
+                const delta = scrollPosition - lastScrollPosition;
+                const elapsed = Math.max(1, now - lastScrollAt);
+                const pastViewport = scrollPosition > window.innerHeight;
+                if (canHover && !isTouchInteraction()) {
+                    panel.classList.toggle('temp-header-hidden', pastViewport);
+                    if (!pastViewport) panel.classList.remove('temp-header-revealed');
+                } else if (isTouchInteraction()) {
+                    panel.classList.toggle('temp-header-hidden', pastViewport);
+                    if (!pastViewport || delta > 2) {
+                        clearTouchReveal();
+                    } else if (pastViewport && delta < -8 && -delta / elapsed >= .3) {
+                        window.clearTimeout(revealTimer);
+                        panel.classList.add('temp-header-revealed');
+                        revealTimer = window.setTimeout(() => {
+                            if (panel.classList.contains('temp-header-hidden')) panel.classList.remove('temp-header-revealed');
+                            revealTimer = 0;
+                        }, 1400);
+                    }
+                }
+                lastScrollPosition = scrollPosition;
+                lastScrollAt = now;
+            };
+            const resetScrollBaseline = () => {
+                lastScrollPosition = readScrollPosition();
+                lastScrollAt = performance.now();
+                updateHeaderVisibility();
+            };
+            document.addEventListener('pointerdown', event => { lastInputWasTouch = event.pointerType === 'touch'; }, { capture:true, passive:true });
+            document.addEventListener('pointermove', event => { if (event.pointerType !== 'touch') lastInputWasTouch = false; }, { passive:true });
+            panel.addEventListener('scroll', updateHeaderVisibility, { passive: true });
+            window.addEventListener('scroll', updateHeaderVisibility, { passive: true });
+            window.addEventListener('resize', resetScrollBaseline);
+            header.addEventListener('pointerenter', () => {
+                if (canHover && !isTouchInteraction() && panel.classList.contains('temp-header-hidden')) panel.classList.add('temp-header-revealed');
+            });
+            header.addEventListener('pointerleave', () => {
+                if (canHover && !isTouchInteraction() && panel.classList.contains('temp-header-hidden')) panel.classList.remove('temp-header-revealed');
+            });
+            updateHeaderVisibility();
+        })();
+        /* END TEMPORARY PREMIUM HEADER AUTO-HIDE */
+        const mobileViewToggle = document.getElementById('mobileViewToggle');
+        let mobileFormScrollY = 0;
+        if (mobileViewToggle) {
+            mobileViewToggle.addEventListener('click', () => {
+                const previewOpen = !document.body.classList.contains('mobile-preview-open');
+                if (previewOpen) mobileFormScrollY = window.scrollY;
+                document.body.classList.toggle('mobile-preview-open', previewOpen);
+                mobileViewToggle.setAttribute('aria-expanded', String(previewOpen));
+                mobileViewToggle.setAttribute('aria-label', previewOpen ? 'Return to input form' : 'Show live preview');
+                mobileViewToggle.textContent = previewOpen ? '✕  Back to form' : 'Preview';
+                if (previewOpen) window.scrollTo({ top:0, behavior:'smooth' });
+                else requestAnimationFrame(() => window.scrollTo({ top:mobileFormScrollY, behavior:'auto' }));
+            });
+        }
+        buildForm(); render(); later();
+
+    </script>
+    <script src="./engine/vendor/tz-lookup.js"></script>
+    <script src="./engine/chart-feature.js"></script>
+</body>
+
+</html>
